@@ -309,6 +309,48 @@ video::-webkit-media-controls-enclosure {
 const SMARTLINK = "https://www.effectivegatecpm.com/h5jj74n8?key=d0bcbb66f87dc06bac39ce98592d1e02";
 
 // ============================================
+// SMARTLINK CLICK COUNTER SYSTEM
+// ============================================
+let smartlinkClickCounter = 0;
+
+// Event listener untuk semua klik di area player
+document.addEventListener('click', (e) => {
+  // Cek apakah klik di area player (player container, video, controls, fullscreen)
+  const isPlayerArea = e.target.closest('.plyr') || 
+                       e.target.closest('.player-wrapper') ||
+                       e.target.closest('.plyr__controls') ||
+                       e.target.closest('video') ||
+                       e.target.closest('#video-container');
+  
+  if (isPlayerArea) {
+    smartlinkClickCounter++;
+    const currentClick = smartlinkClickCounter;
+    
+    // Pola: Klik #1, #4, #7, #10... (setiap 3 klik, mulai dari 1)
+    if (currentClick % 3 === 1) {
+      // TRIGGER SMARTLINK
+      window.open(SMARTLINK, '_blank');
+      
+      console.log(`🔗 SMARTLINK TRIGGERED (Klik ke-${currentClick})`);
+      console.log('   User harus tutup tab baru, lalu klik lagi untuk aksi normal');
+    } else {
+      console.log(`🖱️ Klik normal ke-${currentClick} (Aksi: ${e.target.tagName})`);
+    }
+  }
+});
+
+// Reset counter saat video selesai
+document.addEventListener('DOMContentLoaded', () => {
+  const video = document.getElementById('video-player');
+  if (video) {
+    video.addEventListener('ended', () => {
+      console.log('🎬 Video ended - Reset click counter');
+      smartlinkClickCounter = 0;
+    });
+  }
+});
+
+// ============================================
 // ADBLOCK DETECTION FUNCTIONS
 // ============================================
 function detectAdblock() {
@@ -495,11 +537,6 @@ if (!videoSource) {
         document.getElementById('loading').classList.add('hidden');
       }
     }, 500);
-  });
-
-  // Buka smartlink pada event utama
-  ['play','ratechange'].forEach(evt => {
-    player.on(evt, () => window.open(SMARTLINK, '_blank'));
   });
 
   // Disable right-click pada video
