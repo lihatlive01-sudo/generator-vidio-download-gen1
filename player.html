@@ -15,6 +15,7 @@ html, body {
   background: #000;
   font-family: Arial, sans-serif;
   overflow: hidden;
+  position: relative;
 }
 
 /* Wrapper untuk kontrol aspect ratio */
@@ -25,6 +26,7 @@ html, body {
   align-items: center;
   justify-content: center;
   background: #000;
+  position: relative;
 }
 
 #video-player {
@@ -71,24 +73,293 @@ video::-webkit-media-controls-download-button {
 video::-webkit-media-controls-enclosure {
   overflow: hidden;
 }
+
+/* ============================================
+   ADBLOCK DETECTION LAYER (Layer 1 - z-index: 1)
+   ============================================ */
+.adblock-message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a0a2e 0%, #16213e 100%);
+  z-index: 1;
+  text-align: center;
+  padding: 40px;
+  border-radius: 16px;
+}
+
+.adblock-message h2 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.adblock-message p {
+  font-size: 18px;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.adblock-message .icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* Ad Bait for Detection */
+.ad-bait {
+  width: 1px;
+  height: 1px;
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  opacity: 0;
+}
+
+/* ============================================
+   VIDEO PLAYER LAYER (Layer 2 - z-index: 100)
+   ============================================ */
+#video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+/* ============================================
+   NATIVE BANNER LAYER (Layer 3 - z-index: 1000)
+   ============================================ */
+#native-banner-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+  display: none;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+#native-banner-overlay.show {
+  display: block;
+}
+
+#native-banner-overlay .close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  transition: all 0.3s ease;
+}
+
+#native-banner-overlay .close-btn:hover {
+  background: #ff0000;
+  transform: scale(1.1);
+}
+
+/* ============================================
+   SOCIAL BAR LAYER (Layer 4 - z-index: 10000)
+   ============================================ */
+#social-bar-container {
+  position: fixed;
+  z-index: 10000;
+  transition: all 0.3s ease;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  text-align: center;
+  color: #cbd5e1;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(168, 85, 247, 0.2);
+  border-top-color: #a855f7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hidden class */
+.hidden {
+  display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .adblock-message h2 {
+    font-size: 24px;
+  }
+  
+  .adblock-message p {
+    font-size: 16px;
+  }
+  
+  .adblock-message .icon {
+    font-size: 48px;
+  }
+}
 </style>
 </head>
 <body>
 
-<div class="player-wrapper">
-  <video id="video-player" playsinline controls controlsList="nodownload"></video>
+<!-- ============================================
+     ADBLOCK DETECTION LAYER (Layer 1)
+     ============================================ -->
+<div class="adblock-message" id="adblockMessage">
+  <div class="icon">🚫</div>
+  <h2>Matikan AdBlock</h2>
+  <p>Untuk melanjutkan menonton</p>
+  <p style="font-size: 14px; color: #94a3b8; margin-top: 10px;">
+    Disable your ad blocker to watch the video
+  </p>
 </div>
+
+<!-- Ad Bait for Detection -->
+<div class="ad-bait advertisment ad-banner"></div>
+
+<!-- ============================================
+     VIDEO PLAYER LAYER (Layer 2)
+     ============================================ -->
+<div id="video-container" class="hidden">
+  <div class="player-wrapper">
+    <video id="video-player" playsinline controls controlsList="nodownload"></video>
+  </div>
+</div>
+
+<!-- ============================================
+     NATIVE BANNER LAYER (Layer 3)
+     ============================================ -->
+<div id="native-banner-overlay">
+  <button class="close-btn" onclick="closeNativeBanner()">×</button>
+  <div id="container-f75b64a3696ffc79b00c3dc18ab09657"></div>
+</div>
+
+<!-- ============================================
+     SOCIAL BAR LAYER (Layer 4)
+     ============================================ -->
+<div id="social-bar-container"></div>
+
+<!-- ============================================
+     LOADING STATE
+     ============================================ -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>Memuat video...</p>
+</div>
+
+<!-- ============================================
+     LOAD SOCIAL BAR SCRIPT
+     ============================================ -->
+<script src="https://pl28678333.effectivegatecpm.com/db/75/44/db7544154f97c94944a76a5c9557ed7a.js"></script>
+
+<!-- ============================================
+     LOAD NATIVE BANNER SCRIPT
+     ============================================ -->
+<script async="async" data-cfasync="false" src="https://pl28678360.effectivegatecpm.com/f75b64a3696ffc79b00c3dc18ab09657/invoke.js"></script>
 
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script>
+// ============================================
+// CONFIGURATION
+// ============================================
+const SMARTLINK = "https://www.effectivegatecpm.com/h5jj74n8?key=d0bcbb66f87dc06bac39ce98592d1e02";
+
+// ============================================
+// ADBLOCK DETECTION FUNCTIONS
+// ============================================
+function detectAdblock() {
+  const bait = document.querySelector('.ad-bait');
+  if (!bait) return false;
+  
+  // Check if element is hidden by adblock
+  const rect = bait.getBoundingClientRect();
+  const isHidden = rect.height === 0 || 
+                   window.getComputedStyle(bait).display === 'none' ||
+                   window.getComputedStyle(bait).visibility === 'hidden';
+  
+  return isHidden;
+}
+
+function handleAdblockDetection() {
+  const isBlocked = detectAdblock();
+  const videoContainer = document.getElementById('video-container');
+  const adblockMessage = document.getElementById('adblockMessage');
+  const loading = document.getElementById('loading');
+  
+  if (isBlocked) {
+    // Adblock detected - hide video, show message
+    videoContainer.classList.add('hidden');
+    adblockMessage.style.display = 'flex';
+    loading.classList.add('hidden');
+    console.log('🚫 AdBlock detected: Video hidden, showing adblock message');
+    return false;
+  } else {
+    // No adblock - show video, hide message
+    videoContainer.classList.remove('hidden');
+    adblockMessage.style.display = 'none';
+    loading.classList.add('hidden');
+    console.log('✅ No AdBlock: Video visible');
+    return true;
+  }
+}
+
+// ============================================
+// VIDEO PLAYER SETUP
+// ============================================
 const urlParams = new URLSearchParams(window.location.search);
 const videoSource = urlParams.get('s');
 const subSource = urlParams.get('sub');
-const SMARTLINK = "https://www.effectivegatecpm.com/dsb6nckr?key=0b69c9d0a8b1cf8e8083fda807b5ad27";
 
 if (!videoSource) {
   alert('Video tidak ditemukan!');
 } else {
+  // Show loading first
+  document.getElementById('loading').classList.add('active');
+  
   const video = document.getElementById('video-player');
 
   // Tambahkan sumber video
@@ -214,6 +485,16 @@ if (!videoSource) {
         }
       }
     }, 1000);
+    
+    // Check adblock setelah player ready
+    setTimeout(() => {
+      const adblockDetected = handleAdblockDetection();
+      
+      if (!adblockDetected) {
+        // Jika adblock terdeteksi, sembunyikan loading
+        document.getElementById('loading').classList.add('hidden');
+      }
+    }, 500);
   });
 
   // Buka smartlink pada event utama
@@ -227,6 +508,138 @@ if (!videoSource) {
     return false;
   });
 }
+
+// ============================================
+// FUNGSI IKLAN BARU
+// ============================================
+
+// 1. SET POSISI RANDOM SOCIAL BAR
+function setRandomSocialBarPosition() {
+  const container = document.getElementById('social-bar-container');
+  if (!container) return;
+
+  // Pilih posisi random: 0=top, 1=bottom, 2=left, 3=right
+  const position = Math.floor(Math.random() * 4);
+  
+  // Reset semua style
+  container.style.top = '';
+  container.style.bottom = '';
+  container.style.left = '';
+  container.style.right = '';
+  container.style.width = 'auto';
+  container.style.height = 'auto';
+
+  switch(position) {
+    case 0: // Top
+      container.style.top = '10px';
+      container.style.left = '50%';
+      container.style.transform = 'translateX(-50%)';
+      container.style.width = '100%';
+      console.log('📊 Social Bar: Position TOP');
+      break;
+    case 1: // Bottom
+      container.style.bottom = '10px';
+      container.style.left = '50%';
+      container.style.transform = 'translateX(-50%)';
+      container.style.width = '100%';
+      console.log('📊 Social Bar: Position BOTTOM');
+      break;
+    case 2: // Left
+      container.style.left = '10px';
+      container.style.top = '50%';
+      container.style.transform = 'translateY(-50%)';
+      container.style.height = '100%';
+      console.log('📊 Social Bar: Position LEFT');
+      break;
+    case 3: // Right
+      container.style.right = '10px';
+      container.style.top = '50%';
+      container.style.transform = 'translateY(-50%)';
+      container.style.height = '100%';
+      console.log('📊 Social Bar: Position RIGHT');
+      break;
+  }
+}
+
+// Jalankan set posisi random saat halaman load
+window.addEventListener('load', () => {
+  setTimeout(setRandomSocialBarPosition, 500);
+});
+
+// 2. KONTROL NATIVE BANNER (Tengah saat Pause)
+function closeNativeBanner() {
+  const overlay = document.getElementById('native-banner-overlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    console.log('❌ Native Banner ditutup');
+  }
+}
+
+// Event listener untuk player (jika player sudah ready)
+document.addEventListener('DOMContentLoaded', () => {
+  const video = document.getElementById('video-player');
+  
+  if (video) {
+    // Sembunyikan native banner saat video playing
+    video.addEventListener('play', () => {
+      const overlay = document.getElementById('native-banner-overlay');
+      if (overlay) {
+        overlay.classList.remove('show');
+        console.log('▶️ Video playing - Native Banner hidden');
+      }
+    });
+
+    // Tampilkan native banner saat video pause
+    video.addEventListener('pause', () => {
+      const overlay = document.getElementById('native-banner-overlay');
+      if (overlay) {
+        overlay.classList.add('show');
+        console.log('⏸️ Video paused - Native Banner shown');
+      }
+    });
+
+    // Tampilkan native banner saat halaman pertama load (video belum play)
+    setTimeout(() => {
+      const overlay = document.getElementById('native-banner-overlay');
+      if (overlay && video.paused) {
+        overlay.classList.add('show');
+        console.log('🏠 Halaman loaded - Native Banner shown (video paused)');
+      }
+    }, 1000);
+  }
+});
+
+// Backup: jika Plyr player ready
+setTimeout(() => {
+  const playerElement = document.querySelector('.plyr');
+  if (playerElement) {
+    const video = playerElement.querySelector('video');
+    if (video) {
+      video.addEventListener('play', () => {
+        document.getElementById('native-banner-overlay')?.classList.remove('show');
+      });
+      video.addEventListener('pause', () => {
+        document.getElementById('native-banner-overlay')?.classList.add('show');
+      });
+    }
+  }
+}, 2000);
+
+// ============================================
+// RECHECK ADBLOCK ON WINDOW FOCUS
+// ============================================
+window.addEventListener('focus', () => {
+  setTimeout(() => {
+    handleAdblockDetection();
+  }, 300);
+});
+
+// ============================================
+// INITIAL ADBLOCK CHECK
+// ============================================
+setTimeout(() => {
+  handleAdblockDetection();
+}, 300);
 </script>
 
 </body>
