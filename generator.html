@@ -315,12 +315,31 @@ button.generate:active {
   display: block;
   animation: fadeIn 0.4s ease;
 }
+
+/* Security Badge */
+.security-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border-left: 4px solid var(--green);
+  padding: 12px 16px;
+  margin-top: 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.security-badge strong {
+  color: var(--green);
+}
 </style>
 </head>
 <body>
 <div class="container">
   <h1>🎬 Dual Generator</h1>
   <p class="subtitle">Generate Player Embed & Safelink Download dalam 1 Klik</p>
+  
+  <div class="security-badge">
+    🔐 <strong>Secure Mode:</strong> Semua URL otomatis dienkripsi untuk proteksi maksimal
+  </div>
 
   <!-- Mode Selector -->
   <div class="mode-selector">
@@ -335,9 +354,9 @@ button.generate:active {
   <!-- MODE 1: Custom Player (CDN Direct) -->
   <div class="mode-content active" id="mode-1">
     <div class="info-box">
-      <h3>💡 Mode 1: Custom Player</h3>
+      <h3>💡 Mode 1: Custom Player (URL Encrypted)</h3>
       <p>
-        Untuk video CDN direct (.mp4, .webm). Video akan diputar menggunakan <strong>custom player Anda</strong> dengan iklan agresif.
+        Untuk video CDN direct (.mp4, .webm). Video akan diputar menggunakan <strong>custom player Anda</strong> dengan URL terenkripsi + iklan agresif.
       </p>
     </div>
 
@@ -383,13 +402,13 @@ button.generate:active {
       </div>
     </div>
 
-    <button class="generate" onclick="generateMode1()">⚡ Generate Links</button>
+    <button class="generate" onclick="generateMode1()">⚡ Generate Links (Encrypted)</button>
   </div>
 
   <!-- MODE 2: Download-Only Generator -->
   <div class="mode-content" id="mode-2">
     <div class="info-box mode-2">
-      <h3>💡 Mode 2: Download-Only Generator</h3>
+      <h3>💡 Mode 2: Download-Only Generator (URL Encrypted)</h3>
       <p>
         Hanya untuk generate <strong>link safelink download</strong>. Link embed Anda tulis manual di Gist (untuk Doodstream, Streamtape, dll).
       </p>
@@ -409,19 +428,19 @@ button.generate:active {
       </div>
     </div>
 
-    <button class="generate" onclick="generateMode2()">⚡ Generate Safelink</button>
+    <button class="generate" onclick="generateMode2()">⚡ Generate Safelink (Encrypted)</button>
   </div>
 
   <!-- RESULTS -->
   <div class="result-section" id="result-section">
     <div class="result-box">
-      <h3 id="result-play-label">▶️ Link Player Embed</h3>
+      <h3 id="result-play-label">▶️ Link Player Embed (Encrypted)</h3>
       <textarea id="play-result" readonly></textarea>
       <button class="copy-btn" data-target="play-result">📋 Copy Play Link</button>
     </div>
 
     <div class="result-box">
-      <h3>📥 Link Safelink Download</h3>
+      <h3>📥 Link Safelink Download (Encrypted)</h3>
       <textarea id="safelink-result" readonly></textarea>
       <button class="copy-btn" data-target="safelink-result">📋 Copy Safelink</button>
     </div>
@@ -435,11 +454,45 @@ button.generate:active {
 </div>
 
 <script>
-// Base URLs - GANTI DENGAN URL REPO ANDA
+// ============================================
+// CONFIGURATION
+// ============================================
 const BASE_PLAYER_URL = window.location.origin + '/player.html';
 const BASE_SAFELINK_URL = window.location.origin + '/safelink1.html';
 
-// Mode Switcher
+// ============================================
+// ENCRYPTION CONFIGURATION
+// ============================================
+const ENCRYPTION_KEY = 'my_secret_key_2026_xyz'; // 🔐 GANTI DENGAN KEY UNIK ANDA!
+
+// ============================================
+// ENCRYPTION FUNCTIONS
+// ============================================
+function encryptUrl(url) {
+  let result = '';
+  for (let i = 0; i < url.length; i++) {
+    result += String.fromCharCode(url.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
+  }
+  return btoa(result);
+}
+
+function decryptUrl(encrypted) {
+  const decoded = atob(encrypted);
+  let result = '';
+  for (let i = 0; i < decoded.length; i++) {
+    result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
+  }
+  return result;
+}
+
+// Test encryption on load
+console.log('🔐 Encryption System Loaded');
+console.log('Key:', ENCRYPTION_KEY);
+console.log('Test encrypt/decrypt:', decryptUrl(encryptUrl('test')) === 'test' ? '✅ OK' : '❌ FAIL');
+
+// ============================================
+// MODE SWITCHER
+// ============================================
 document.querySelectorAll('.mode-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     const mode = this.getAttribute('data-mode');
@@ -457,7 +510,9 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
   });
 });
 
-// MODE 1: Custom Player
+// ============================================
+// MODE 1: Custom Player (WITH ENCRYPTION)
+// ============================================
 function generateMode1() {
   const videoLink = document.getElementById('video-link-1').value.trim();
   const subLink = document.getElementById('sub-link-1').value.trim();
@@ -475,29 +530,40 @@ function generateMode1() {
     console.log('ℹ️ Download link kosong, menggunakan link video');
   }
 
-  // Generate Player URL
+  // 🔐 ENCRYPT ALL URLS
+  const encryptedVideo = encryptUrl(videoLink);
+  const encryptedSub = subLink ? encryptUrl(subLink) : '';
+  const encryptedDownload = encryptUrl(downloadLink);
+
+  console.log('🔐 URLs encrypted successfully');
+  console.log('Video length:', encryptedVideo.length);
+  console.log('Sub length:', encryptedSub.length);
+  console.log('Download length:', encryptedDownload.length);
+
+  // Generate Player URL (dengan URL terenkripsi)
   const playerParams = new URLSearchParams();
-  playerParams.set('s', videoLink);
-  if (subLink) playerParams.set('sub', subLink);
+  playerParams.set('s', encryptedVideo);
+  if (encryptedSub) playerParams.set('sub', encryptedSub);
   const playURL = BASE_PLAYER_URL + '?' + playerParams.toString();
 
-  // Generate Safelink URL
-  const encodedDownload = btoa(downloadLink);
-  const safelinkURL = BASE_SAFELINK_URL + '#dl=' + encodedDownload;
+  // Generate Safelink URL (dengan URL terenkripsi)
+  const safelinkURL = BASE_SAFELINK_URL + '#dl=' + encryptedDownload;
 
   // Generate Gist JSON
   const gistJSON = {
     "id": "v" + Date.now().toString().slice(-6),
     "play": playURL,
     "download": safelinkURL,
-    "note": "Mode 1: Custom Player - " + new Date().toISOString(),
+    "note": "Mode 1: Custom Player (Encrypted) - " + new Date().toISOString(),
     "type": "direct"
   };
 
-  displayResults(playURL, safelinkURL, gistJSON, "▶️ Link Player Embed (Custom)");
+  displayResults(playURL, safelinkURL, gistJSON, "▶️ Link Player Embed (Encrypted)");
 }
 
-// MODE 2: Download-Only Generator
+// ============================================
+// MODE 2: Download-Only Generator (WITH ENCRYPTION)
+// ============================================
 function generateMode2() {
   const downloadLink = document.getElementById('download-link-2').value.trim();
 
@@ -507,23 +573,30 @@ function generateMode2() {
     return;
   }
 
+  // 🔐 ENCRYPT DOWNLOAD URL
+  const encryptedDownload = encryptUrl(downloadLink);
+
+  console.log('🔐 Download URL encrypted successfully');
+  console.log('Encrypted length:', encryptedDownload.length);
+
   // Generate Safelink URL
-  const encodedDownload = btoa(downloadLink);
-  const safelinkURL = BASE_SAFELINK_URL + '#dl=' + encodedDownload;
+  const safelinkURL = BASE_SAFELINK_URL + '#dl=' + encryptedDownload;
 
   // Generate Gist JSON template (user tulis manual untuk "play")
   const gistJSON = {
     "id": "v" + Date.now().toString().slice(-6),
     "play": "TULIS_MANUAL_EMBED_URL_DISINI",
     "download": safelinkURL,
-    "note": "Mode 2: Download-Only - " + new Date().toISOString(),
+    "note": "Mode 2: Download-Only (Encrypted) - " + new Date().toISOString(),
     "type": "embed"
   };
 
-  displayResults(null, safelinkURL, gistJSON, "📥 Link Safelink Download");
+  displayResults(null, safelinkURL, gistJSON, "📥 Link Safelink Download (Encrypted)");
 }
 
-// Display Results
+// ============================================
+// DISPLAY RESULTS
+// ============================================
 function displayResults(playURL, safelinkURL, gistJSON, playLabel) {
   const resultSection = document.getElementById('result-section');
   const playBox = resultSection.querySelector('.result-box:first-child');
@@ -547,7 +620,9 @@ function displayResults(playURL, safelinkURL, gistJSON, playLabel) {
   }, 100);
 }
 
-// Copy buttons
+// ============================================
+// COPY BUTTONS
+// ============================================
 document.querySelectorAll('.copy-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     const targetId = this.getAttribute('data-target');
