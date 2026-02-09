@@ -309,6 +309,32 @@ video::-webkit-media-controls-enclosure {
 const SMARTLINK = "https://www.effectivegatecpm.com/h5jj74n8?key=d0bcbb66f87dc06bac39ce98592d1e02";
 
 // ============================================
+// ENCRYPTION CONFIGURATION
+// ============================================
+const ENCRYPTION_KEY = '112233'; // 🔐 HARUS SAMA DENGAN GENERATOR!
+
+// ============================================
+// DECRYPTION FUNCTION
+// ============================================
+function decryptUrl(encrypted) {
+  try {
+    const decoded = atob(encrypted);
+    let result = '';
+    for (let i = 0; i < decoded.length; i++) {
+      result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
+    }
+    return result;
+  } catch (e) {
+    console.error('❌ Decryption failed:', e.message);
+    return null;
+  }
+}
+
+// Test decryption on load
+console.log('🔐 Decryption System Loaded');
+console.log('Key:', ENCRYPTION_KEY);
+
+// ============================================
 // SMARTLINK CLICK COUNTER SYSTEM
 // ============================================
 let smartlinkClickCounter = 0;
@@ -390,15 +416,22 @@ function handleAdblockDetection() {
 }
 
 // ============================================
-// VIDEO PLAYER SETUP
+// VIDEO PLAYER SETUP (WITH DECRYPTION)
 // ============================================
 const urlParams = new URLSearchParams(window.location.search);
-const videoSource = urlParams.get('s');
-const subSource = urlParams.get('sub');
+const encryptedVideo = urlParams.get('s');
+const encryptedSub = urlParams.get('sub');
+
+// 🔐 DECRYPT URLS
+const videoSource = encryptedVideo ? decryptUrl(encryptedVideo) : null;
+const subSource = encryptedSub ? decryptUrl(encryptedSub) : null;
 
 if (!videoSource) {
-  alert('Video tidak ditemukan!');
+  alert('Video tidak ditemukan atau link rusak!');
 } else {
+  console.log('✅ URL decrypted successfully');
+  console.log('🎥 Video URL length:', videoSource.length);
+  
   // Show loading first
   document.getElementById('loading').classList.add('active');
   
@@ -412,6 +445,7 @@ if (!videoSource) {
 
   // Tambahkan subtitle jika ada
   if (subSource) {
+    console.log('💬 Subtitle URL length:', subSource.length);
     const track = document.createElement('track');
     track.kind = 'subtitles';
     track.src = subSource;
