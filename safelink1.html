@@ -13,9 +13,74 @@ body {
   font-family: "Poppins", sans-serif;
   min-height: 100vh;
   padding: 20px 10px;
+  position: relative;
 }
 
 .content-wrapper { max-width: 900px; margin: 0 auto; }
+
+/* ============================================
+   ADBLOCK DETECTION LAYER (Layer 1 - z-index: 1)
+   ============================================ */
+.adblock-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a0a2e 0%, #16213e 100%);
+  z-index: 1;
+  text-align: center;
+  padding: 40px;
+}
+
+.adblock-message h2 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.adblock-message p {
+  font-size: 18px;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.adblock-message .icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* Ad Bait for Detection */
+.ad-bait {
+  width: 1px;
+  height: 1px;
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  opacity: 0;
+}
+
+/* ============================================
+   MAIN CONTENT LAYER (Layer 2 - z-index: 100)
+   ============================================ */
+.content-wrapper {
+  position: relative;
+  z-index: 100;
+}
 
 /* Ad Container */
 .ad-container {
@@ -185,7 +250,9 @@ body {
   50% { box-shadow: 0 8px 40px rgba(16, 185, 129, 0.7); }
 }
 
-/* Overlay */
+/* ============================================
+   OVERLAY LAYER (Layer 3 - z-index: 1000)
+   ============================================ */
 .overlay {
   display: none;
   position: fixed;
@@ -194,7 +261,7 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.95);
-  z-index: 9999;
+  z-index: 1000;
   overflow-y: auto;
   backdrop-filter: blur(10px);
 }
@@ -247,13 +314,15 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Social Bar Container */
+/* ============================================
+   SOCIAL BAR LAYER (Layer 4 - z-index: 10000)
+   ============================================ */
 #social-bar-container {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 10000;
   width: 100%;
   max-width: 728px;
 }
@@ -279,11 +348,35 @@ body {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Hidden class */
+.hidden {
+  display: none !important;
+}
 </style>
 </head>
 <body>
 
-<div class="content-wrapper">
+<!-- ============================================
+     ADBLOCK DETECTION LAYER (Layer 1)
+     ============================================ -->
+<div class="adblock-message" id="adblockMessage">
+  <div class="icon">🚫</div>
+  <h2>Matikan AdBlock</h2>
+  <p>Untuk melanjutkan download</p>
+  <p style="font-size: 14px; color: #94a3b8; margin-top: 10px;">
+    Disable your ad blocker to continue
+  </p>
+</div>
+
+<!-- Ad Bait for Detection -->
+<div class="ad-bait advertisment ad-banner"></div>
+
+<!-- ============================================
+     MAIN CONTENT LAYER (Layer 2)
+     ============================================ -->
+<div class="content-wrapper hidden" id="mainContent">
+
   <div class="header-section">
     <h1>⏳ Continue to Download</h1>
     <p>Mohon tunggu dan lihat iklan sponsor kami untuk melanjutkan download</p>
@@ -340,6 +433,9 @@ body {
   </div>
 </div>
 
+<!-- ============================================
+     OVERLAY LAYER (Layer 3)
+     ============================================ -->
 <div class="overlay" id="adOverlay">
   <div class="overlay-content">
     <h3>🎯 Iklan Sponsor</h3>
@@ -366,6 +462,42 @@ body {
 // ============================================
 const ENCRYPTION_KEY = '112233'; // 🔐 HARUS SAMA DENGAN GENERATOR & PLAYER!
 const SMARTLINK = "https://www.effectivegatecpm.com/scyy3vbct?key=08c6143a94380122062a22898c62fdc6";
+
+// ============================================
+// ADBLOCK DETECTION FUNCTIONS
+// ============================================
+function detectAdblock() {
+  const bait = document.querySelector('.ad-bait');
+  if (!bait) return false;
+  
+  // Check if element is hidden by adblock
+  const rect = bait.getBoundingClientRect();
+  const isHidden = rect.height === 0 || 
+                   window.getComputedStyle(bait).display === 'none' ||
+                   window.getComputedStyle(bait).visibility === 'hidden';
+  
+  return isHidden;
+}
+
+function handleAdblockDetection() {
+  const isBlocked = detectAdblock();
+  const adblockMessage = document.getElementById('adblockMessage');
+  const mainContent = document.getElementById('mainContent');
+  
+  if (isBlocked) {
+    // Adblock detected - hide content, show message
+    adblockMessage.style.display = 'flex';
+    mainContent.classList.add('hidden');
+    console.log('🚫 AdBlock detected: Content hidden, showing adblock message');
+    return false;
+  } else {
+    // No adblock - show content, hide message
+    adblockMessage.style.display = 'none';
+    mainContent.classList.remove('hidden');
+    console.log('✅ No AdBlock: Content visible');
+    return true;
+  }
+}
 
 // ============================================
 // DECRYPTION FUNCTION
@@ -597,12 +729,33 @@ function closeOverlay() {
 document.getElementById('closeOverlayBtn').onclick = closeOverlay;
 
 // ============================================
+// ADBLOCK DETECTION INITIALIZATION
+// ============================================
+// Initial check
+setTimeout(() => {
+  const adblockDetected = handleAdblockDetection();
+  
+  if (!adblockDetected) {
+    // Show error if adblock detected
+    showError('🚫 AdBlock terdeteksi! Silakan matikan AdBlock untuk melanjutkan.');
+  }
+}, 300);
+
+// Re-check on window focus (user might disable adblock)
+window.addEventListener('focus', () => {
+  setTimeout(() => {
+    handleAdblockDetection();
+  }, 300);
+});
+
+// ============================================
 // CONSOLE LOGGING
 // ============================================
 console.log('🔐 Safelink System Loaded');
 console.log('🔑 Encryption Key:', ENCRYPTION_KEY);
 console.log('🔗 Smartlink URL:', SMARTLINK);
 console.log('🎲 Correct button index:', correctIndex);
+console.log('🛡️ Adblock detection: ENABLED');
 </script>
 </body>
 </html>
