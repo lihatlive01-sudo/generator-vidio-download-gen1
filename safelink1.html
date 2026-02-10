@@ -246,6 +246,39 @@ body {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Social Bar Container */
+#social-bar-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 100%;
+  max-width: 728px;
+}
+
+/* Error Message */
+.error-message {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 20px 0;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
+  display: none;
+}
+
+.error-message.show {
+  display: block;
+  animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 <body>
@@ -254,6 +287,14 @@ body {
   <div class="header-section">
     <h1>⏳ Continue to Download</h1>
     <p>Mohon tunggu dan lihat iklan sponsor kami untuk melanjutkan download</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" id="errorMessage"></div>
+
+  <!-- Social Bar -->
+  <div id="social-bar-container">
+    <script src="https://pl28691838.effectivegatecpm.com/78/fa/46/78fa4651e68597e51185aeb9981ee52a.js"></script>
   </div>
 
   <div class="ad-container" id="adContainer1">
@@ -303,8 +344,13 @@ body {
   <div class="overlay-content">
     <h3>🎯 Iklan Sponsor</h3>
     <p style="color:#cbd5e1;margin-bottom:20px;">Terima kasih telah mendukung kami dengan melihat iklan ini</p>
-    <script>atOptions={'key':'fe0c4ae1791e506f7b1558972b878705','format':'iframe','height':250,'width':300,'params':{}};</script>
-    <script src="//www.highperformanceformat.com/fe0c4ae1791e506f7b1558972b878705/invoke.js"></script>
+    
+    <!-- Native Banner in Overlay -->
+    <div style="margin: 20px 0; padding: 15px; background: rgba(30, 30, 60, 0.8); border-radius: 12px;">
+      <script async="async" data-cfasync="false" src="https://pl28691840.effectivegatecpm.com/3c4a8f90d1e4ea48094d5e639467729e/invoke.js"></script>
+      <div id="container-3c4a8f90d1e4ea48094d5e639467729e"></div>
+    </div>
+    
     <button id="closeOverlayBtn" disabled>
       <span class="loading"></span> Tunggu <span id="overlayTimer">5</span> detik
     </button>
@@ -315,98 +361,248 @@ body {
 <script src='//pl28014410.effectivegatecpm.com/77/6b/17/776b17db92afc5094913dfbdb3d9d036.js'></script>
 
 <script>
-const times = [10, 12, 15];
-const correctIndex = Math.floor(Math.random() * times.length);
-const timersDiv = document.getElementById("timers");
-const encoded = location.hash.split('=')[1];
-const smartLink = "https://www.effectivegatecpm.com/dsb6nckr?key=0b69c9d0a8b1cf8e8083fda807b5ad27";
+// ============================================
+// CONFIGURATION
+// ============================================
+const ENCRYPTION_KEY = 'my_secret_key_2026_xyz'; // 🔐 HARUS SAMA DENGAN GENERATOR & PLAYER!
+const SMARTLINK = "https://www.effectivegatecpm.com/scyy3vbct?key=08c6143a94380122062a22898c62fdc6";
 
-let ad1Done=false,ad2Done=false,ad3Done=false,allAdsViewed=false;
-
-function runCountdown(id,time,callback){
-  let t=time;
-  const el=document.getElementById(id);
-  const num=el.querySelector("strong");
-  const interval=setInterval(()=>{
-    t--; num.textContent=t;
-    if(t<=0){
-      clearInterval(interval);
-      el.innerHTML='<span class="icon">✅</span><span>Selesai!</span>';
-      el.classList.add('completed');
-      callback();
+// ============================================
+// DECRYPTION FUNCTION
+// ============================================
+function decryptUrl(encrypted) {
+  try {
+    const decoded = atob(encrypted);
+    let result = '';
+    for (let i = 0; i < decoded.length; i++) {
+      result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
     }
-  },1000);
-}
-
-runCountdown("countdown1",10,()=>{ad1Done=true;checkAllAds();});
-runCountdown("countdown2",12,()=>{ad2Done=true;checkAllAds();});
-runCountdown("countdown3",8,()=>{ad3Done=true;checkAllAds();});
-
-function checkAllAds(){
-  if(ad1Done&&ad2Done&&ad3Done&&!allAdsViewed){
-    allAdsViewed=true;
-    enableTimerButtons();
+    return result;
+  } catch (e) {
+    console.error('❌ Decryption failed:', e.message);
+    return null;
   }
 }
 
-function enableTimerButtons(){
-  times.forEach((time,i)=>{
-    const btn=document.createElement("button");
-    btn.className="timer-btn";
-    btn.textContent=`${time} detik`;
-    btn.onclick=()=>startTimer(btn,time,i);
-    timersDiv.appendChild(btn);
-  });
+// ============================================
+// ERROR HANDLING FUNCTION
+// ============================================
+function showError(message) {
+  const errorDiv = document.getElementById('errorMessage');
+  errorDiv.textContent = message;
+  errorDiv.classList.add('show');
+  
+  // Auto hide after 10 seconds
+  setTimeout(() => {
+    errorDiv.classList.remove('show');
+  }, 10000);
 }
 
-function startTimer(btn,time,i){
-  if(btn.classList.contains("running"))return;
-  btn.classList.add("running");
-  let remaining=time;
-  const interval=setInterval(()=>{
-    remaining--;
-    btn.textContent=`${remaining}s`;
-    if(remaining<=0){
+// ============================================
+// ANALYTICS TRACKING (Optional - uncomment if needed)
+// ============================================
+function trackEvent(action, label = '', value = 0) {
+  console.log(`📊 Analytics: ${action} - ${label} - ${value}`);
+  
+  // Google Analytics (uncomment if you have GA)
+  /*
+  if (typeof gtag !== 'undefined') {
+    gtag('event', action, {
+      'event_category': 'safelink',
+      'event_label': label,
+      'value': value
+    });
+  }
+  */
+}
+
+// ============================================
+// INITIAL VALIDATION
+// ============================================
+const encoded = location.hash.split('=')[1];
+
+// Validate URL parameter
+if (!encoded || encoded === 'undefined') {
+  showError('❌ Link download tidak ditemukan! Silakan kembali ke halaman video.');
+  console.error('❌ Missing download parameter');
+  trackEvent('error', 'missing_parameter');
+  
+  // Auto redirect after 5 seconds
+  setTimeout(() => {
+    window.history.back();
+  }, 5000);
+}
+
+// Decrypt URL
+const decryptedUrl = decryptUrl(encoded);
+
+if (!decryptedUrl) {
+  showError('❌ Link rusak atau tidak valid! Silakan refresh halaman video.');
+  console.error('❌ Decryption failed');
+  trackEvent('error', 'decryption_failed');
+  
+  // Auto redirect after 5 seconds
+  setTimeout(() => {
+    window.history.back();
+  }, 5000);
+}
+
+console.log('✅ URL decrypted successfully');
+console.log('🔗 Decrypted URL length:', decryptedUrl.length);
+trackEvent('page_view', 'safelink1');
+
+// ============================================
+// SAFELINK LOGIC
+// ============================================
+const times = [10, 12, 15];
+const correctIndex = Math.floor(Math.random() * times.length);
+const timersDiv = document.getElementById("timers");
+
+let ad1Done = false, ad2Done = false, ad3Done = false, allAdsViewed = false;
+
+function runCountdown(id, time, callback) {
+  let t = time;
+  const el = document.getElementById(id);
+  const num = el.querySelector("strong");
+  const interval = setInterval(() => {
+    t--;
+    num.textContent = t;
+    if (t <= 0) {
       clearInterval(interval);
-      btn.textContent="BUKA";
+      el.innerHTML = '<span class="icon">✅</span><span>Selesai!</span>';
+      el.classList.add('completed');
+      callback();
+    }
+  }, 1000);
+}
+
+runCountdown("countdown1", 10, () => { ad1Done = true; checkAllAds(); });
+runCountdown("countdown2", 12, () => { ad2Done = true; checkAllAds(); });
+runCountdown("countdown3", 8, () => { ad3Done = true; checkAllAds(); });
+
+function checkAllAds() {
+  if (ad1Done && ad2Done && ad3Done && !allAdsViewed) {
+    allAdsViewed = true;
+    enableTimerButtons();
+    trackEvent('ads_viewed', 'all_complete');
+  }
+}
+
+function enableTimerButtons() {
+  times.forEach((time, i) => {
+    const btn = document.createElement("button");
+    btn.className = "timer-btn";
+    btn.textContent = `${time} detik`;
+    btn.onclick = () => startTimer(btn, time, i);
+    timersDiv.appendChild(btn);
+  });
+  
+  console.log(`✅ Timer buttons enabled. Correct index: ${correctIndex}`);
+}
+
+function startTimer(btn, time, i) {
+  if (btn.classList.contains("running")) return;
+  
+  btn.classList.add("running");
+  btn.disabled = true;
+  
+  let remaining = time;
+  const interval = setInterval(() => {
+    remaining--;
+    btn.textContent = `${remaining}s`;
+    
+    if (remaining <= 0) {
+      clearInterval(interval);
+      btn.textContent = "BUKA";
       btn.classList.add('active');
-      btn.onclick=()=>{
-        if(i===correctIndex){
-          window.location.href=`safelink2.html#dl=${encoded}`;
-        }else{
+      btn.disabled = false;
+      
+      btn.onclick = () => {
+        if (i === correctIndex) {
+          // Correct button clicked
+          trackEvent('success', 'correct_button', i);
+          console.log('✅ Correct button clicked!');
+          
+          // Set flag for safelink2 validation
+          localStorage.setItem('safelink_passed', Date.now().toString());
+          
+          // Loading state
+          btn.textContent = "🔄 Memproses...";
+          btn.disabled = true;
+          
+          // Redirect to safelink2
+          setTimeout(() => {
+            window.location.href = `safelink2.html#dl=${encodeURIComponent(decryptedUrl)}`;
+          }, 1000);
+        } else {
+          // Wrong button clicked
+          trackEvent('failed', 'wrong_button', i);
+          console.log('❌ Wrong button clicked!');
+          
+          // Show overlay with native banner
           showOverlay();
-          window.open(smartLink,"_blank");
-          btn.textContent="❌ Belum Beruntung";
-          btn.style.background="linear-gradient(135deg,#dc2626 0%,#b91c1c 100%)";
-          btn.style.borderColor="#ef4444";
+          
+          // Open smartlink in new tab
+          window.open(SMARTLINK, "_blank");
+          
+          // Update button UI
+          btn.textContent = "❌ Belum Beruntung";
+          btn.style.background = "linear-gradient(135deg,#dc2626 0%,#b91c1c 100%)";
+          btn.style.borderColor = "#ef4444";
           btn.classList.remove('active');
+          btn.disabled = true;
         }
       };
     }
-  },1000);
+  }, 1000);
 }
 
-function showOverlay(){
-  document.getElementById("adOverlay").style.display="block";
-  let overlayTimer=5;
-  const closeBtn=document.getElementById('closeOverlayBtn');
-  const overlayInterval=setInterval(()=>{
+function showOverlay() {
+  const overlay = document.getElementById("adOverlay");
+  overlay.style.display = "block";
+  
+  // Disable scrolling
+  document.body.style.overflow = 'hidden';
+  
+  // Prevent close tab (warning)
+  window.onbeforeunload = function() {
+    return "Tunggu hingga iklan selesai untuk melanjutkan!";
+  };
+  
+  let overlayTimer = 5;
+  const closeBtn = document.getElementById('closeOverlayBtn');
+  const overlayInterval = setInterval(() => {
     overlayTimer--;
-    document.getElementById('overlayTimer').textContent=overlayTimer;
-    if(overlayTimer<=0){
+    document.getElementById('overlayTimer').textContent = overlayTimer;
+    
+    if (overlayTimer <= 0) {
       clearInterval(overlayInterval);
-      closeBtn.disabled=false;
-      closeBtn.innerHTML='✅ Tutup Iklan';
-      closeBtn.style.background='linear-gradient(135deg,#10b981 0%,#059669 100%)';
+      closeBtn.disabled = false;
+      closeBtn.innerHTML = '✅ Tutup Iklan';
+      closeBtn.style.background = 'linear-gradient(135deg,#10b981 0%,#059669 100%)';
+      
+      // Allow close tab
+      window.onbeforeunload = null;
     }
-  },1000);
+  }, 1000);
 }
 
-function closeOverlay(){
-  document.getElementById("adOverlay").style.display="none";
+function closeOverlay() {
+  document.getElementById("adOverlay").style.display = "none";
+  document.body.style.overflow = 'auto';
+  window.onbeforeunload = null;
+  trackEvent('overlay_closed');
 }
 
-document.getElementById('closeOverlayBtn').onclick=closeOverlay;
+document.getElementById('closeOverlayBtn').onclick = closeOverlay;
+
+// ============================================
+// CONSOLE LOGGING
+// ============================================
+console.log('🔐 Safelink System Loaded');
+console.log('🔑 Encryption Key:', ENCRYPTION_KEY);
+console.log('🔗 Smartlink URL:', SMARTLINK);
+console.log('🎲 Correct button index:', correctIndex);
 </script>
 </body>
 </html>
