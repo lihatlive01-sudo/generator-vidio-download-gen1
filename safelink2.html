@@ -227,13 +227,16 @@ h1 {
   padding: 20px;
   margin: 20px 0;
   border: 1px solid rgba(96, 165, 250, 0.2);
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.native-banner-container iframe {
-  width: 100%;
-  min-height: 250px;
-  border: none;
-  border-radius: 8px;
+.native-banner-placeholder {
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
 }
 
 /* Overlay Timer */
@@ -326,6 +329,22 @@ h1 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Key Warning */
+.key-warning {
+  background: rgba(245, 158, 11, 0.2);
+  border-left: 4px solid #f59e0b;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  color: #fcd34d;
+  font-size: 13px;
+  display: none;
+}
+
+.key-warning.show {
+  display: block;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -384,8 +403,8 @@ h1 {
     padding: 15px 10px;
   }
   
-  .native-banner-container iframe {
-    min-height: 200px;
+  .native-banner-container {
+    min-height: 220px;
   }
 }
 </style>
@@ -398,6 +417,12 @@ h1 {
   <p class="description">Please wait a moment while we prepare your download link...</p>
   
   <div class="error" id="errorMessage"></div>
+  
+  <div class="key-warning" id="keyWarning">
+    🔑 <strong>IMPORTANT:</strong> ENCRYPTION_KEY mismatch! 
+    Make sure your generator/player uses the same key as safelink2:<br>
+    <code>'my_secret_key_2026_xyz'</code>
+  </div>
   
   <div class="countdown">
     <h3>⏳ Preparing Download</h3>
@@ -424,6 +449,10 @@ h1 {
     </p>
     
     <div class="native-banner-container">
+      <div class="native-banner-placeholder" id="bannerPlaceholder">
+        Loading advertisement...
+      </div>
+      <!-- Native Banner Script (NO SPACES!) -->
       <script async="async" data-cfasync="false" src="https://pl28691840.effectivegatecpm.com/3c4a8f90d1e4ea48094d5e639467729e/invoke.js"></script>
       <div id="container-3c4a8f90d1e4ea48094d5e639467729e"></div>
     </div>
@@ -438,32 +467,45 @@ h1 {
   </div>
 </div>
 
-<!-- Social Bar -->
+<!-- Social Bar (NO SPACES!) -->
 <div id="social-bar">
   <script src="https://pl28691838.effectivegatecpm.com/78/fa/46/78fa4651e68597e51185aeb9981ee52a.js"></script>
 </div>
 
 <script>
 // ============================================
-// CONFIGURATION
+// ⚠️ ⚠️ ⚠️ PENTING: GANTI KEY INI SESUAI DENGAN GENERATOR & PLAYER! ⚠️ ⚠️ ⚠️
 // ============================================
-const ENCRYPTION_KEY = '112233';
+const ENCRYPTION_KEY = '112233'; // 🔑 HARUS SAMA DENGAN GENERATOR & PLAYER!
+
 const SMARTLINK = "https://www.effectivegatecpm.com/tze9d73m?key=a95d041153ca51a6fd296220541f8994";
-const EXTRA_DELAY_SECONDS = 3; // ⏰ 3 detik tambahan setelah countdown
+const EXTRA_DELAY_SECONDS = 3;
 
 // ============================================
-// DECRYPTION FUNCTION
+// DECRYPTION FUNCTION (DENGAN DEBUGGING)
 // ============================================
 function decryptUrl(encrypted) {
   try {
+    // Debug: Log encoded string
+    console.log('🔍 Encoded URL:', encrypted.substring(0, 30) + '...');
+    
     const decoded = atob(encrypted);
+    console.log('🔍 Decoded length:', decoded.length);
+    
     let result = '';
     for (let i = 0; i < decoded.length; i++) {
       result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
     }
+    
+    // Debug: Log first 30 chars of result
+    console.log('✅ Decrypted (first 30 chars):', result.substring(0, 30) + '...');
     return result;
   } catch (e) {
     console.error('❌ Decryption failed:', e.message);
+    console.error('💡 Possible causes:');
+    console.error('   1. ENCRYPTION_KEY mismatch between generator and safelink2');
+    console.error('   2. Corrupted URL parameter');
+    console.error('   3. URL encoding issue (%3D vs =)');
     return null;
   }
 }
@@ -475,6 +517,11 @@ function showError(message) {
   const errorDiv = document.getElementById('errorMessage');
   errorDiv.textContent = message;
   errorDiv.classList.add('show');
+  
+  // Show key warning if decryption failed
+  if (message.includes('Invalid') || message.includes('corrupted')) {
+    document.getElementById('keyWarning').classList.add('show');
+  }
 }
 
 // ============================================
@@ -485,91 +532,69 @@ function showNativeOverlay() {
   const closeBtn = document.getElementById('closeOverlayBtn');
   const overlaySeconds = document.getElementById('overlaySeconds');
   const extraDelayIndicator = document.getElementById('extraDelayIndicator');
+  const bannerPlaceholder = document.getElementById('bannerPlaceholder');
   
   // Show overlay
   overlay.style.display = 'block';
-  
-  // Disable scrolling
   document.body.style.overflow = 'hidden';
+  
+  // Hide placeholder after 2 seconds (assume banner loaded)
+  setTimeout(() => {
+    bannerPlaceholder.style.display = 'none';
+  }, 2000);
   
   let seconds = 10;
   let countdownComplete = false;
   let overlayComplete = false;
   
-  // Update timer display
   const timerInterval = setInterval(() => {
     seconds--;
     overlaySeconds.textContent = seconds;
     
     if (seconds <= 0 && !countdownComplete) {
       countdownComplete = true;
-      
-      // Countdown selesai (10 detik), tapi close button masih DISABLED
       console.log('✅ Main countdown complete (10s), starting extra delay...');
       
-      // Show extra delay indicator
       extraDelayIndicator.classList.add('show');
       
-      // Start extra delay countdown (3 detik tambahan)
       setTimeout(() => {
-        // Extra delay selesai (13 detik total)
         overlayComplete = true;
-        
-        // Enable close button
         closeBtn.disabled = false;
         closeBtn.style.opacity = '1';
         closeBtn.style.cursor = 'pointer';
-        
-        // Hide extra delay indicator
         extraDelayIndicator.classList.remove('show');
-        
-        // Update timer text
         document.getElementById('overlayTimer').innerHTML = '✅ <strong>Ready!</strong> You can close now';
-        
         console.log('✅ Overlay timer complete (13s total), close button enabled');
       }, EXTRA_DELAY_SECONDS * 1000);
     }
     
-    // Stop interval after countdown complete
     if (countdownComplete && seconds <= -EXTRA_DELAY_SECONDS) {
       clearInterval(timerInterval);
     }
   }, 1000);
   
-  // Close button handler (TRAP SYSTEM)
   closeBtn.onclick = function() {
     if (!overlayComplete) {
-      // Trap: If clicked before 13 seconds total, redirect to smartlink
-      console.log('⚠️ Trap activated: Close button clicked before timer complete (13s)');
-      
-      // Simulate click on native banner (or open smartlink)
+      console.log('⚠️ Trap activated: Close button clicked before 13s');
       window.open(SMARTLINK, '_blank');
-      
-      // Show message
       alert('🕐 Please wait until the security check completes!\nSupport our sponsors to continue...');
-      
-      // Shake effect on close button
       closeBtn.style.animation = 'shake 0.5s';
-      setTimeout(() => {
-        closeBtn.style.animation = '';
-      }, 500);
+      setTimeout(() => { closeBtn.style.animation = ''; }, 500);
     } else {
-      // Normal close after 13 seconds total
       closeNativeOverlay();
     }
   };
   
-  console.log('✅ Native banner overlay shown (13s total exposure)');
+  console.log('✅ Native banner overlay shown');
 }
 
 function closeNativeOverlay() {
-  const overlay = document.getElementById('nativeOverlay');
-  overlay.style.display = 'none';
+  document.getElementById('nativeOverlay').style.display = 'none';
   document.body.style.overflow = 'auto';
   console.log('✅ Native banner overlay closed');
 }
 
-// Add shake animation for trap effect
+// Add shake animation
 const style = document.createElement('style');
 style.textContent = `
   @keyframes shake {
@@ -585,10 +610,8 @@ document.head.appendChild(style);
 // ============================================
 function startCountdown(downloadUrl) {
   const timerEl = document.getElementById('timer');
-  const progressBar = document.getElementById('progressBar');
   const downloadBtn = document.getElementById('downloadBtn');
   
-  // Show overlay immediately when countdown starts
   showNativeOverlay();
   
   let seconds = 10;
@@ -598,11 +621,8 @@ function startCountdown(downloadUrl) {
     
     if (seconds <= 0) {
       clearInterval(interval);
-      
-      // Open smartlink
       window.open(SMARTLINK, '_blank');
       
-      // Enable download button
       downloadBtn.disabled = false;
       downloadBtn.classList.add('active');
       downloadBtn.innerHTML = '⬇️ Download Now';
@@ -610,41 +630,60 @@ function startCountdown(downloadUrl) {
         window.location.href = downloadUrl;
       };
       
-      console.log('✅ Main countdown complete (10s), download ready');
+      console.log('✅ Countdown complete, download ready');
     }
   }, 1000);
 }
 
 // ============================================
-// INITIAL VALIDATION
+// URL DECODING FIX (Handle %3D encoding)
 // ============================================
-const encoded = location.hash.split('=')[1];
-
-if (!encoded || encoded === 'undefined') {
-  showError('❌ Download link not found!');
-  console.error('❌ Missing download parameter');
-} else {
-  const decryptedUrl = decryptUrl(encoded);
+function getDecodedHashParam() {
+  const hash = window.location.hash;
+  if (!hash) return null;
   
-  if (!decryptedUrl) {
-    showError('❌ Invalid or corrupted link!');
-    console.error('❌ Decryption failed');
-  } else {
-    console.log('✅ URL decrypted successfully');
-    console.log('🔗 Decrypted URL length:', decryptedUrl.length);
-    startCountdown(decryptedUrl);
-  }
+  // Extract everything after #dl=
+  const match = hash.match(/#dl=(.+)/);
+  if (!match || !match[1]) return null;
+  
+  let encoded = match[1];
+  
+  // Fix URL encoding: %3D → =
+  encoded = encoded.replace(/%3D/g, '=');
+  
+  console.log('🔗 Raw hash param:', encoded.substring(0, 30) + '...');
+  return encoded;
 }
 
 // ============================================
-// CONSOLE LOGGING
+// INITIALIZATION
 // ============================================
-console.log('🔐 Safelink2 System Loaded');
-console.log('🔗 Smartlink URL:', SMARTLINK);
-console.log('🎯 Overlay system: ENABLED');
-console.log('⏰ Extra delay:', EXTRA_DELAY_SECONDS, 'seconds');
-console.log('⚠️ Trap system: ACTIVE (close button redirects before 13s)');
-console.log('💰 Total exposure time: 13 seconds (10s + 3s extra)');
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🔐 Safelink2 System Loaded');
+  console.log('🔑 ENCRYPTION_KEY:', ENCRYPTION_KEY);
+  console.log('🔗 Smartlink URL:', SMARTLINK);
+  
+  // Get URL parameter (with encoding fix)
+  const encoded = getDecodedHashParam();
+  
+  if (!encoded || encoded === 'undefined') {
+    showError('❌ Download link not found! Missing #dl= parameter.');
+    console.error('❌ Missing download parameter');
+    return;
+  }
+  
+  // Try decrypt
+  const decryptedUrl = decryptUrl(encoded);
+  
+  if (!decryptedUrl) {
+    showError('❌ Invalid or corrupted link! Check ENCRYPTION_KEY mismatch.');
+    console.error('❌ Decryption failed - possible key mismatch');
+    return;
+  }
+  
+  console.log('✅ URL decrypted successfully');
+  startCountdown(decryptedUrl);
+});
 </script>
 
 </body>
