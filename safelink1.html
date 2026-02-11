@@ -354,6 +354,7 @@ body{
   </div>
 </div>
 
+<!-- External Ad Scripts -->
 <script src='//pl28014407.effectivegatecpm.com/52/62/5a/52625a84e5cc480ed8f5abfb3b53e58a.js'></script>
 <script src='//pl28014410.effectivegatecpm.com/77/6b/17/776b17db92afc5094913dfbdb3d9d036.js'></script>
 
@@ -375,21 +376,48 @@ function decryptUrl(e){try{const t=atob(e),n=[];for(let e=0;e<t.length;e++)n.pus
 function showError(e){const t=document.getElementById('errorMessage');t.textContent=e;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),10000)}
 
 // ============================================
-// ADBLOCK DETECTION - OPTIMIZED
+// ADBLOCK DETECTION - FIXED (CRITICAL BUG FIX)
 // ============================================
-function detectAdblock(){const e=document.querySelector('.ad-bait');return e&&(getBoundingClientRect().height===0||getComputedStyle(e).display==='none'||getComputedStyle(e).visibility==='hidden')}
+function detectAdblock(){
+  const e=document.querySelector('.ad-bait');
+  if(!e)return!1;
+  const t=e.getBoundingClientRect();
+  return t.height===0||getComputedStyle(e).display==='none'||getComputedStyle(e).visibility==='hidden'
+}
 
-function handleAdblockDetection(){const e=detectAdblock(),t=document.getElementById('adblockMessage'),n=document.getElementById('mainContent');e?(t.style.display='flex',n.classList.add('hidden')):(t.style.display='none',n.classList.remove('hidden'))}
+function handleAdblockDetection(){
+  const e=detectAdblock(),
+        t=document.getElementById('adblockMessage'),
+        n=document.getElementById('mainContent');
+  e?(t.style.display='flex',n.classList.add('hidden')):(t.style.display='none',n.classList.remove('hidden'))
+}
 
 // ============================================
 // COUNTDOWN - OPTIMIZED
 // ============================================
-function runCountdown(e,t,n){let r=t;const s=document.getElementById(e),o=s.querySelector('strong'),i=setInterval(()=>{--r,o.textContent=r,r<=0&&(clearInterval(i),s.innerHTML='<span>✅</span><span>Selesai!</span>',s.classList.add('completed'),n())},1000)}
+function runCountdown(e,t,n){
+  let r=t;
+  const s=document.getElementById(e),
+        o=s.querySelector('strong'),
+        i=setInterval(()=>{
+          --r;
+          o.textContent=r;
+          if(r<=0){
+            clearInterval(i);
+            s.innerHTML='<span>✅</span><span>Selesai!</span>';
+            s.classList.add('completed');
+            n()
+          }
+        },1000)
+}
 
 // ============================================
 // SAFELINK LOGIC - OPTIMIZED
 // ============================================
-const times=[10,12,15],correctIndex=Math.floor(Math.random()*times.length),timersDiv=document.getElementById('timers'),encoded=location.hash.split('=')[1];
+const times=[10,12,15],
+      correctIndex=Math.floor(Math.random()*times.length),
+      timersDiv=document.getElementById('timers'),
+      encoded=location.hash.split('=')[1];
 
 let ad1Done=!1,ad2Done=!1,ad3Done=!1,allAdsViewed=!1;
 
@@ -397,22 +425,91 @@ runCountdown('countdown1',10,()=>{ad1Done=!0;checkAllAds()});
 runCountdown('countdown2',12,()=>{ad2Done=!0;checkAllAds()});
 runCountdown('countdown3',8,()=>{ad3Done=!0;checkAllAds()});
 
-function checkAllAds(){ad1Done&&ad2Done&&ad3Done&&!allAdsViewed&&(allAdsViewed=!0,enableTimerButtons())}
+function checkAllAds(){
+  ad1Done&&ad2Done&&ad3Done&&!allAdsViewed&&(allAdsViewed=!0,enableTimerButtons())
+}
 
-function enableTimerButtons(){times.forEach((e,t)=>{const n=document.createElement('button');n.className='timer-btn',n.textContent=`${e} detik`,n.onclick=()=>startTimer(n,e,t),timersDiv.appendChild(n)})}
+function enableTimerButtons(){
+  times.forEach((e,t)=>{
+    const n=document.createElement('button');
+    n.className='timer-btn';
+    n.textContent=`${e} detik`;
+    n.onclick=()=>startTimer(n,e,t);
+    timersDiv.appendChild(n)
+  })
+}
 
-function startTimer(e,t,n){if(e.classList.contains('running'))return;e.classList.add('running'),e.disabled=!0;let r=t,s=setInterval(()=>{--r,e.textContent=`${r}s`,r<=0&&(clearInterval(s),e.textContent='BUKA',e.classList.add('active'),e.disabled=!1,e.onclick=()=>{n===correctIndex?(localStorage.setItem('safelink_passed',Date.now().toString()),e.textContent='🔄 Memproses...',e.disabled=!0,setTimeout(()=>{const t=decryptUrl(encoded);t?window.location.href=`safelink2.html#dl=${encodeURIComponent(t)}`:showError('Link rusak!')},1000)):(showOverlay(),window.open(SMARTLINK,'_blank'),e.textContent='❌ Belum Beruntung',e.style.background='linear-gradient(135deg,#dc2626,#b91c1c)',e.style.borderColor='#ef4444',e.classList.remove('active'),e.disabled=!0)})},1000)}
+function startTimer(e,t,n){
+  if(e.classList.contains('running'))return;
+  e.classList.add('running');
+  e.disabled=!0;
+  let r=t,
+      s=setInterval(()=>{
+        --r;
+        e.textContent=`${r}s`;
+        if(r<=0){
+          clearInterval(s);
+          e.textContent='BUKA';
+          e.classList.add('active');
+          e.disabled=!1;
+          e.onclick=()=>{
+            if(n===correctIndex){
+              localStorage.setItem('safelink_passed',Date.now().toString());
+              e.textContent='🔄 Memproses...';
+              e.disabled=!0;
+              setTimeout(()=>{
+                const t=decryptUrl(encoded);
+                t?window.location.href=`safelink2.html#dl=${encodeURIComponent(t)}`:showError('Link rusak!')
+              },1000)
+            }else{
+              showOverlay();
+              window.open(SMARTLINK,'_blank');
+              e.textContent='❌ Belum Beruntung';
+              e.style.background='linear-gradient(135deg,#dc2626,#b91c1c)';
+              e.style.borderColor='#ef4444';
+              e.classList.remove('active');
+              e.disabled=!0
+            }
+          }
+        }
+      },1000)
+}
 
-function showOverlay(){const e=document.getElementById('adOverlay');e.style.display='block',document.body.style.overflow='hidden',window.onbeforeunload=()=>{return'Tunggu hingga iklan selesai untuk melanjutkan!'};let t=5,n=document.getElementById('closeOverlayBtn'),r=setInterval(()=>{--t,document.getElementById('overlayTimer').textContent=t,t<=0&&(clearInterval(r),n.disabled=!1,n.innerHTML='✅ Tutup Iklan',n.style.background='linear-gradient(135deg,#10b981,#059669)',window.onbeforeunload=null)},1000)}
+function showOverlay(){
+  const e=document.getElementById('adOverlay');
+  e.style.display='block';
+  document.body.style.overflow='hidden';
+  window.onbeforeunload=()=>'Tunggu hingga iklan selesai untuk melanjutkan!';
+  let t=5,
+      n=document.getElementById('closeOverlayBtn'),
+      r=setInterval(()=>{
+        --t;
+        document.getElementById('overlayTimer').textContent=t;
+        if(t<=0){
+          clearInterval(r);
+          n.disabled=!1;
+          n.innerHTML='✅ Tutup Iklan';
+          n.style.background='linear-gradient(135deg,#10b981,#059669)';
+          window.onbeforeunload=null
+        }
+      },1000)
+}
 
-function closeOverlay(){document.getElementById('adOverlay').style.display='none',document.body.style.overflow='auto',window.onbeforeunload=null}
+function closeOverlay(){
+  document.getElementById('adOverlay').style.display='none';
+  document.body.style.overflow='auto';
+  window.onbeforeunload=null
+}
 
 document.getElementById('closeOverlayBtn').onclick=closeOverlay;
 
 // ============================================
-// INITIALIZATION - OPTIMIZED
+// INITIALIZATION - FIXED
 // ============================================
-setTimeout(()=>{const e=decryptUrl(encoded);e?(handleAdblockDetection(),console.log('✅ URL decrypted')):(showError('Link tidak valid!'),console.error('❌ Decryption failed'))},300);
+setTimeout(()=>{
+  const e=decryptUrl(encoded);
+  e?(handleAdblockDetection(),console.log('✅ URL decrypted')):(showError('Link tidak valid!'),console.error('❌ Decryption failed'))
+},300);
 
 window.addEventListener('focus',()=>setTimeout(handleAdblockDetection,300));
 </script>
