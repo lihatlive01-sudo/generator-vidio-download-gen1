@@ -329,22 +329,6 @@ h1 {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Key Warning */
-.key-warning {
-  background: rgba(245, 158, 11, 0.2);
-  border-left: 4px solid #f59e0b;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
-  color: #fcd34d;
-  font-size: 13px;
-  display: none;
-}
-
-.key-warning.show {
-  display: block;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -411,18 +395,15 @@ h1 {
 </head>
 <body>
 
+<!-- ============================================
+     MAIN CONTENT
+     ============================================ -->
 <div class="container">
   <div class="icon">⏳</div>
   <h1>Download Ready</h1>
   <p class="description">Please wait a moment while we prepare your download link...</p>
   
   <div class="error" id="errorMessage"></div>
-  
-  <div class="key-warning" id="keyWarning">
-    🔑 <strong>IMPORTANT:</strong> ENCRYPTION_KEY mismatch! 
-    Make sure your generator/player uses the same key as safelink2:<br>
-    <code>'my_secret_key_2026_xyz'</code>
-  </div>
   
   <div class="countdown">
     <h3>⏳ Preparing Download</h3>
@@ -439,7 +420,9 @@ h1 {
   </button>
 </div>
 
-<!-- Overlay with Native Banner -->
+<!-- ============================================
+     OVERLAY WITH NATIVE BANNER
+     ============================================ -->
 <div class="overlay" id="nativeOverlay">
   <div class="overlay-content">
     <button class="close-btn" id="closeOverlayBtn" title="Close after timer completes">✕</button>
@@ -452,7 +435,7 @@ h1 {
       <div class="native-banner-placeholder" id="bannerPlaceholder">
         Loading advertisement...
       </div>
-      <!-- Native Banner Script (NO SPACES!) -->
+      <!-- ⚠️ NO SPACES AT THE END OF URL! -->
       <script async="async" data-cfasync="false" src="https://pl28691840.effectivegatecpm.com/3c4a8f90d1e4ea48094d5e639467729e/invoke.js"></script>
       <div id="container-3c4a8f90d1e4ea48094d5e639467729e"></div>
     </div>
@@ -467,45 +450,36 @@ h1 {
   </div>
 </div>
 
-<!-- Social Bar (NO SPACES!) -->
+<!-- ============================================
+     SOCIAL BAR
+     ============================================ -->
 <div id="social-bar">
+  <!-- ⚠️ NO SPACES AT THE END OF URL! -->
   <script src="https://pl28691838.effectivegatecpm.com/78/fa/46/78fa4651e68597e51185aeb9981ee52a.js"></script>
 </div>
 
 <script>
 // ============================================
-// ⚠️ ⚠️ ⚠️ PENTING: GANTI KEY INI SESUAI DENGAN GENERATOR & PLAYER! ⚠️ ⚠️ ⚠️
+// 🔑 GANTI DENGAN KEY ANDA YANG SAMA DI GENERATOR, PLAYER, DAN SAFELINK1!
 // ============================================
-const ENCRYPTION_KEY = '112233'; // 🔑 HARUS SAMA DENGAN GENERATOR & PLAYER!
+const ENCRYPTION_KEY = '112233'; // ← GANTI INI DENGAN KEY ANDA!
 
 const SMARTLINK = "https://www.effectivegatecpm.com/tze9d73m?key=a95d041153ca51a6fd296220541f8994";
 const EXTRA_DELAY_SECONDS = 3;
 
 // ============================================
-// DECRYPTION FUNCTION (DENGAN DEBUGGING)
+// DECRYPTION FUNCTION
 // ============================================
 function decryptUrl(encrypted) {
   try {
-    // Debug: Log encoded string
-    console.log('🔍 Encoded URL:', encrypted.substring(0, 30) + '...');
-    
     const decoded = atob(encrypted);
-    console.log('🔍 Decoded length:', decoded.length);
-    
     let result = '';
     for (let i = 0; i < decoded.length; i++) {
       result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
     }
-    
-    // Debug: Log first 30 chars of result
-    console.log('✅ Decrypted (first 30 chars):', result.substring(0, 30) + '...');
     return result;
   } catch (e) {
     console.error('❌ Decryption failed:', e.message);
-    console.error('💡 Possible causes:');
-    console.error('   1. ENCRYPTION_KEY mismatch between generator and safelink2');
-    console.error('   2. Corrupted URL parameter');
-    console.error('   3. URL encoding issue (%3D vs =)');
     return null;
   }
 }
@@ -517,11 +491,6 @@ function showError(message) {
   const errorDiv = document.getElementById('errorMessage');
   errorDiv.textContent = message;
   errorDiv.classList.add('show');
-  
-  // Show key warning if decryption failed
-  if (message.includes('Invalid') || message.includes('corrupted')) {
-    document.getElementById('keyWarning').classList.add('show');
-  }
 }
 
 // ============================================
@@ -682,6 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   console.log('✅ URL decrypted successfully');
+  console.log('🔗 Decrypted URL length:', decryptedUrl.length);
   startCountdown(decryptedUrl);
 });
 </script>
