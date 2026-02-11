@@ -152,7 +152,7 @@ h1 {
 }
 
 /* ============================================
-   OVERLAY LAYER (Native Banner)
+   OVERLAY LAYER (Native Banner) - 15 DETIK EXPOSURE
    ============================================ */
 .overlay {
   display: none;
@@ -178,16 +178,7 @@ h1 {
   border: 2px solid rgba(96, 165, 250, 0.3);
 }
 
-.overlay-content h3 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #63b3ed 0%, #3182ce 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 700;
-}
-
-/* Close Button (TRAP BUTTON) */
+/* Close Button (TRAP BUTTON) - Tetap Ada */
 .close-btn {
   position: absolute;
   top: 15px;
@@ -198,7 +189,7 @@ h1 {
   border: 2px solid #dc2626;
   color: #fca5a5;
   border-radius: 50%;
-  cursor: pointer;
+  cursor: not-allowed; /* Terlihat disabled tapi tetap bisa diklik */
   font-size: 20px;
   font-weight: bold;
   display: flex;
@@ -206,18 +197,35 @@ h1 {
   justify-content: center;
   transition: all 0.3s ease;
   z-index: 1001;
+  opacity: 0.5; /* Terlihat disabled */
 }
 
 .close-btn:hover {
-  background: rgba(220, 38, 38, 0.4);
   transform: scale(1.1);
-  box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.7);
 }
 
-.close-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
+/* Overlay Timer - 15 DETIK TOTAL (10s + 5s extra) */
+.overlay-timer {
+  font-size: 42px;
+  font-weight: 800;
+  color: #63b3ed;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  box-shadow: 0 4px 20px rgba(96, 165, 250, 0.3);
+  text-shadow: 0 2px 10px rgba(96, 165, 250, 0.5);
+  display: block;
+}
+
+.overlay-timer .label {
+  font-size: 18px;
+  color: #cbd5e1;
+  display: block;
+  margin-top: 8px;
+  font-weight: 400;
 }
 
 /* Native Banner Container */
@@ -225,9 +233,9 @@ h1 {
   background: rgba(20, 30, 50, 0.8);
   border-radius: 12px;
   padding: 20px;
-  margin: 20px 0;
+  margin: 0;
   border: 1px solid rgba(96, 165, 250, 0.2);
-  min-height: 280px;
+  min-height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,40 +245,6 @@ h1 {
   color: #64748b;
   font-size: 14px;
   text-align: center;
-}
-
-/* Overlay Timer */
-.overlay-timer {
-  margin-top: 15px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #63b3ed 0%, #3182ce 100%);
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 16px;
-  color: #fff;
-  display: inline-block;
-  box-shadow: 0 4px 15px rgba(96, 165, 250, 0.4);
-}
-
-/* Extra Delay Indicator */
-.extra-delay {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #fff;
-  padding: 8px 15px;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-top: 10px;
-  display: none;
-}
-
-.extra-delay.show {
-  display: inline-block;
-  animation: pulseOrange 1s infinite;
-}
-
-@keyframes pulseOrange {
-  0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.8); }
 }
 
 /* Social Bar */
@@ -329,6 +303,13 @@ h1 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Shake Animation for Trap */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -353,10 +334,23 @@ h1 {
     padding: 20px 15px;
   }
   
+  .overlay-timer {
+    font-size: 36px;
+    padding: 12px;
+  }
+  
+  .overlay-timer .label {
+    font-size: 16px;
+  }
+  
   .close-btn {
     width: 35px;
     height: 35px;
     font-size: 18px;
+  }
+  
+  .native-banner-container {
+    min-height: 280px;
   }
 }
 
@@ -387,8 +381,23 @@ h1 {
     padding: 15px 10px;
   }
   
+  .overlay-timer {
+    font-size: 30px;
+    padding: 10px;
+  }
+  
+  .overlay-timer .label {
+    font-size: 14px;
+  }
+  
+  .close-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+  
   .native-banner-container {
-    min-height: 220px;
+    min-height: 240px;
   }
 }
 </style>
@@ -396,7 +405,7 @@ h1 {
 <body>
 
 <!-- ============================================
-     MAIN CONTENT
+     MAIN CONTENT (UNCHANGED)
      ============================================ -->
 <div class="container">
   <div class="icon">⏳</div>
@@ -421,31 +430,26 @@ h1 {
 </div>
 
 <!-- ============================================
-     OVERLAY WITH NATIVE BANNER
+     OVERLAY WITH NATIVE BANNER (15 DETIK EXPOSURE)
      ============================================ -->
 <div class="overlay" id="nativeOverlay">
   <div class="overlay-content">
+    <!-- TOMBOL CLOSE (X) - TETAP ADA DENGAN TRAP SYSTEM -->
     <button class="close-btn" id="closeOverlayBtn" title="Close after timer completes">✕</button>
-    <h3>🎯 Please Support Our Sponsors</h3>
-    <p style="color:#cbd5e1;margin-bottom:20px;font-size:15px;">
-      Your support helps us keep this service free. Thank you! 🙏
-    </p>
     
+    <!-- COUNTDOWN TIMER BESAR DI ATAS (15 DETIK TOTAL) -->
+    <div class="overlay-timer" id="overlayTimer">
+      <span id="overlaySeconds">15</span>
+      <div class="label">Seconds Remaining</div>
+    </div>
+    
+    <!-- NATIVE BANNER -->
     <div class="native-banner-container">
       <div class="native-banner-placeholder" id="bannerPlaceholder">
         Loading advertisement...
       </div>
-      <!-- ⚠️ NO SPACES AT THE END OF URL! -->
       <script async="async" data-cfasync="false" src="https://pl28691840.effectivegatecpm.com/3c4a8f90d1e4ea48094d5e639467729e/invoke.js"></script>
       <div id="container-3c4a8f90d1e4ea48094d5e639467729e"></div>
-    </div>
-    
-    <div class="overlay-timer" id="overlayTimer">
-      ⏱️ <span id="overlaySeconds">10</span> seconds remaining...
-    </div>
-    
-    <div class="extra-delay" id="extraDelayIndicator">
-      🔒 Additional security check in progress...
     </div>
   </div>
 </div>
@@ -454,7 +458,6 @@ h1 {
      SOCIAL BAR
      ============================================ -->
 <div id="social-bar">
-  <!-- ⚠️ NO SPACES AT THE END OF URL! -->
   <script src="https://pl28691838.effectivegatecpm.com/78/fa/46/78fa4651e68597e51185aeb9981ee52a.js"></script>
 </div>
 
@@ -462,39 +465,31 @@ h1 {
 // ============================================
 // CONFIGURATION
 // ============================================
-const ENCRYPTION_KEY = '112233'; // 🔑 Sesuai dengan console Anda
+const ENCRYPTION_KEY = '112233'; // Sesuai console Anda
 const SMARTLINK = "https://www.effectivegatecpm.com/tze9d73m?key=a95d041153ca51a6fd296220541f8994";
-const EXTRA_DELAY_SECONDS = 3;
+const OVERLAY_TOTAL_SECONDS = 15; // 10 detik + 5 detik extra delay
 
 // ============================================
-// DECRYPTION FUNCTION (DENGAN FLEXIBLE HANDLING)
+// DECRYPTION FUNCTION (FLEXIBLE)
 // ============================================
 function decryptUrl(encrypted) {
   try {
-    console.log('🔍 Attempting to decrypt Base64 string...');
-    
-    // Coba decrypt Base64
+    console.log('🔍 Attempting Base64 decryption...');
     const decoded = atob(encrypted);
-    console.log('✅ Base64 decoded successfully, length:', decoded.length);
-    
     let result = '';
     for (let i = 0; i < decoded.length; i++) {
       result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
     }
-    
     console.log('✅ Decrypted URL (first 50 chars):', result.substring(0, 50) + '...');
     return result;
   } catch (e) {
-    console.warn('⚠️ Base64 decryption failed, trying URL decode instead...');
-    
-    // Jika Base64 gagal, coba URL decode (URL tidak terenkripsi)
+    console.warn('⚠️ Base64 failed, trying URL decode...');
     try {
       const decoded = decodeURIComponent(encrypted);
       console.log('✅ URL decoded successfully');
-      console.log('✅ Decoded URL (first 50 chars):', decoded.substring(0, 50) + '...');
       return decoded;
     } catch (urlError) {
-      console.error('❌ URL decode also failed:', urlError.message);
+      console.error('❌ URL decode failed:', urlError.message);
       return null;
     }
   }
@@ -510,95 +505,85 @@ function showError(message) {
 }
 
 // ============================================
-// OVERLAY SYSTEM
+// OVERLAY SYSTEM (15 DETIK DENGAN TRAP SYSTEM)
 // ============================================
 function showNativeOverlay() {
   const overlay = document.getElementById('nativeOverlay');
   const closeBtn = document.getElementById('closeOverlayBtn');
   const overlaySeconds = document.getElementById('overlaySeconds');
-  const extraDelayIndicator = document.getElementById('extraDelayIndicator');
   const bannerPlaceholder = document.getElementById('bannerPlaceholder');
   
   // Show overlay
   overlay.style.display = 'block';
   document.body.style.overflow = 'hidden';
   
-  // Hide placeholder after 2 seconds (assume banner loaded)
+  // Hide placeholder after 2 seconds
   setTimeout(() => {
     bannerPlaceholder.style.display = 'none';
   }, 2000);
   
-  let seconds = 10;
-  let countdownComplete = false;
+  // Set initial timer display
+  overlaySeconds.textContent = OVERLAY_TOTAL_SECONDS;
+  
+  let seconds = OVERLAY_TOTAL_SECONDS;
   let overlayComplete = false;
   
+  // Countdown timer (15 seconds total)
   const timerInterval = setInterval(() => {
     seconds--;
-    overlaySeconds.textContent = seconds;
     
-    if (seconds <= 0 && !countdownComplete) {
-      countdownComplete = true;
-      console.log('✅ Main countdown complete (10s), starting extra delay...');
-      
-      extraDelayIndicator.classList.add('show');
-      
-      setTimeout(() => {
-        overlayComplete = true;
-        closeBtn.disabled = false;
-        closeBtn.style.opacity = '1';
-        closeBtn.style.cursor = 'pointer';
-        extraDelayIndicator.classList.remove('show');
-        document.getElementById('overlayTimer').innerHTML = '✅ <strong>Ready!</strong> You can close now';
-        console.log('✅ Overlay timer complete (13s total), close button enabled');
-      }, EXTRA_DELAY_SECONDS * 1000);
-    }
-    
-    if (countdownComplete && seconds <= -EXTRA_DELAY_SECONDS) {
+    if (seconds < 0 && !overlayComplete) {
+      // Timer selesai (15 detik)
       clearInterval(timerInterval);
+      overlayComplete = true;
+      closeNativeOverlay();
+      console.log('✅ Overlay closed automatically after 15 seconds');
+    } else if (seconds >= 0) {
+      // Update timer display
+      overlaySeconds.textContent = seconds;
     }
   }, 1000);
   
+  // Close button TRAP SYSTEM (aktif selama 15 detik)
   closeBtn.onclick = function() {
     if (!overlayComplete) {
-      console.log('⚠️ Trap activated: Close button clicked before 13s');
+      // TRAP: Redirect to smartlink jika diklik sebelum 15 detik
+      console.log(`⚠️ Trap activated! Close button clicked at ${OVERLAY_TOTAL_SECONDS - seconds}s`);
       window.open(SMARTLINK, '_blank');
-      alert('🕐 Please wait until the security check completes!\nSupport our sponsors to continue...');
+      
+      // Alert message
+      alert('🕐 Please wait until the timer completes!\nSupport our sponsors to continue...');
+      
+      // Shake animation
       closeBtn.style.animation = 'shake 0.5s';
-      setTimeout(() => { closeBtn.style.animation = ''; }, 500);
+      setTimeout(() => { 
+        closeBtn.style.animation = ''; 
+      }, 500);
     } else {
+      // Normal close (seharusnya tidak terjadi karena auto-close)
       closeNativeOverlay();
     }
   };
   
-  console.log('✅ Native banner overlay shown');
+  console.log(`✅ Native banner overlay shown (15s total exposure: 10s + 5s extra)`);
 }
 
 function closeNativeOverlay() {
   document.getElementById('nativeOverlay').style.display = 'none';
   document.body.style.overflow = 'auto';
-  console.log('✅ Native banner overlay closed');
 }
 
-// Add shake animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-  }
-`;
-document.head.appendChild(style);
-
 // ============================================
-// COUNTDOWN FUNCTION
+// COUNTDOWN FUNCTION (MAIN PAGE - 10 DETIK)
 // ============================================
 function startCountdown(downloadUrl) {
   const timerEl = document.getElementById('timer');
   const downloadBtn = document.getElementById('downloadBtn');
   
+  // Show overlay immediately (15 detik exposure)
   showNativeOverlay();
   
+  // Main countdown (10 detik)
   let seconds = 10;
   const interval = setInterval(() => {
     seconds--;
@@ -606,8 +591,11 @@ function startCountdown(downloadUrl) {
     
     if (seconds <= 0) {
       clearInterval(interval);
+      
+      // Buka smartlink saat countdown utama selesai (10 detik)
       window.open(SMARTLINK, '_blank');
       
+      // Aktifkan tombol download (tapi masih tertutup overlay sampai 15 detik)
       downloadBtn.disabled = false;
       downloadBtn.classList.add('active');
       downloadBtn.innerHTML = '⬇️ Download Now';
@@ -615,7 +603,7 @@ function startCountdown(downloadUrl) {
         window.location.href = downloadUrl;
       };
       
-      console.log('✅ Countdown complete, download ready');
+      console.log('✅ Main countdown complete (10s), download button active (overlay still showing until 15s)');
     }
   }, 1000);
 }
@@ -627,12 +615,10 @@ function getHashParam() {
   const hash = window.location.hash;
   if (!hash) return null;
   
-  // Extract everything after #dl=
   const match = hash.match(/#dl=(.+)/);
   if (!match || !match[1]) return null;
   
   let encoded = match[1];
-  
   console.log('🔗 Raw hash param (first 50 chars):', encoded.substring(0, 50) + '...');
   return encoded;
 }
@@ -643,9 +629,8 @@ function getHashParam() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🔐 Safelink2 System Loaded');
   console.log('🔑 ENCRYPTION_KEY:', ENCRYPTION_KEY);
-  console.log('🔗 Smartlink URL:', SMARTLINK);
+  console.log(`⏱️ Overlay exposure: ${OVERLAY_TOTAL_SECONDS} seconds (10s + 5s extra)`);
   
-  // Get URL parameter
   const encoded = getHashParam();
   
   if (!encoded || encoded === 'undefined') {
@@ -654,7 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
-  // Try decrypt (Base64 or URL decode)
   const decryptedUrl = decryptUrl(encoded);
   
   if (!decryptedUrl) {
@@ -664,7 +648,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   console.log('✅ URL processed successfully');
-  console.log('🔗 Final URL length:', decryptedUrl.length);
   startCountdown(decryptedUrl);
 });
 </script>
