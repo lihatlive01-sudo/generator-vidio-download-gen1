@@ -460,27 +460,43 @@ h1 {
 
 <script>
 // ============================================
-// 🔑 GANTI DENGAN KEY ANDA YANG SAMA DI GENERATOR, PLAYER, DAN SAFELINK1!
+// CONFIGURATION
 // ============================================
-const ENCRYPTION_KEY = '112233'; // ← GANTI INI DENGAN KEY ANDA!
-
+const ENCRYPTION_KEY = '112233'; // 🔑 Sesuai dengan console Anda
 const SMARTLINK = "https://www.effectivegatecpm.com/tze9d73m?key=a95d041153ca51a6fd296220541f8994";
 const EXTRA_DELAY_SECONDS = 3;
 
 // ============================================
-// DECRYPTION FUNCTION
+// DECRYPTION FUNCTION (DENGAN FLEXIBLE HANDLING)
 // ============================================
 function decryptUrl(encrypted) {
   try {
+    console.log('🔍 Attempting to decrypt Base64 string...');
+    
+    // Coba decrypt Base64
     const decoded = atob(encrypted);
+    console.log('✅ Base64 decoded successfully, length:', decoded.length);
+    
     let result = '';
     for (let i = 0; i < decoded.length; i++) {
       result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
     }
+    
+    console.log('✅ Decrypted URL (first 50 chars):', result.substring(0, 50) + '...');
     return result;
   } catch (e) {
-    console.error('❌ Decryption failed:', e.message);
-    return null;
+    console.warn('⚠️ Base64 decryption failed, trying URL decode instead...');
+    
+    // Jika Base64 gagal, coba URL decode (URL tidak terenkripsi)
+    try {
+      const decoded = decodeURIComponent(encrypted);
+      console.log('✅ URL decoded successfully');
+      console.log('✅ Decoded URL (first 50 chars):', decoded.substring(0, 50) + '...');
+      return decoded;
+    } catch (urlError) {
+      console.error('❌ URL decode also failed:', urlError.message);
+      return null;
+    }
   }
 }
 
@@ -605,9 +621,9 @@ function startCountdown(downloadUrl) {
 }
 
 // ============================================
-// URL DECODING FIX (Handle %3D encoding)
+// URL EXTRACTION & DECODING
 // ============================================
-function getDecodedHashParam() {
+function getHashParam() {
   const hash = window.location.hash;
   if (!hash) return null;
   
@@ -617,10 +633,7 @@ function getDecodedHashParam() {
   
   let encoded = match[1];
   
-  // Fix URL encoding: %3D → =
-  encoded = encoded.replace(/%3D/g, '=');
-  
-  console.log('🔗 Raw hash param:', encoded.substring(0, 30) + '...');
+  console.log('🔗 Raw hash param (first 50 chars):', encoded.substring(0, 50) + '...');
   return encoded;
 }
 
@@ -632,8 +645,8 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('🔑 ENCRYPTION_KEY:', ENCRYPTION_KEY);
   console.log('🔗 Smartlink URL:', SMARTLINK);
   
-  // Get URL parameter (with encoding fix)
-  const encoded = getDecodedHashParam();
+  // Get URL parameter
+  const encoded = getHashParam();
   
   if (!encoded || encoded === 'undefined') {
     showError('❌ Download link not found! Missing #dl= parameter.');
@@ -641,17 +654,17 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
-  // Try decrypt
+  // Try decrypt (Base64 or URL decode)
   const decryptedUrl = decryptUrl(encoded);
   
   if (!decryptedUrl) {
-    showError('❌ Invalid or corrupted link! Check ENCRYPTION_KEY mismatch.');
-    console.error('❌ Decryption failed - possible key mismatch');
+    showError('❌ Invalid or corrupted link!');
+    console.error('❌ Decryption failed');
     return;
   }
   
-  console.log('✅ URL decrypted successfully');
-  console.log('🔗 Decrypted URL length:', decryptedUrl.length);
+  console.log('✅ URL processed successfully');
+  console.log('🔗 Final URL length:', decryptedUrl.length);
   startCountdown(decryptedUrl);
 });
 </script>
