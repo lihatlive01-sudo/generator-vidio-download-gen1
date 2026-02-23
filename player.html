@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>Streaming Player</title>
+
+<!-- Plyr CSS (NO SPACES IN URL) -->
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css"/>
+
 <style>
 /* ============================================
    GLOBAL RESET & BASE STYLES
@@ -54,17 +57,74 @@ html, body {
   background: #000;
 }
 
+/* ============================================
+   PLYR CUSTOMIZATION (THEME)
+   ============================================ */
 .plyr {
   width: 100%;
   height: 100%;
   position: relative;
   --plyr-color-main: #a855f7;
+  --plyr-video-background: #000;
+  font-family: inherit;
+}
+
+.plyr--full-ui {
+  width: 100%;
+  height: 100%;
+}
+
+.plyr__video-wrapper {
+  width: 100%;
+  height: 100%;
+  background: #000;
 }
 
 .plyr video {
   object-fit: contain !important;
   width: 100%;
   height: 100%;
+  display: block;
+}
+
+/* Plyr Controls Styling */
+.plyr__controls {
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%);
+  padding: 10px 15px;
+}
+
+.plyr__control {
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.plyr__control:hover {
+  background: rgba(168, 85, 247, 0.3);
+}
+
+.plyr__control--overlaid {
+  background: rgba(168, 85, 247, 0.8);
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+}
+
+.plyr__control--overlaid:hover {
+  background: rgba(168, 85, 247, 1);
+  transform: scale(1.1);
+}
+
+.plyr__progress__container {
+  flex: 1;
+}
+
+.plyr__progress__bar {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.plyr__volume {
+  display: flex;
+  align-items: center;
 }
 
 /* Custom Download Button */
@@ -72,23 +132,40 @@ html, body {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  background: #00b3ff !important;
+  background: linear-gradient(135deg, #00b3ff 0%, #0095d9 100%) !important;
   color: white !important;
-  font-size: 14px;
-  padding: 8px 12px !important;
-  border-radius: 4px;
+  font-size: 13px;
+  padding: 8px 14px !important;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s;
-  margin-left: 4px;
+  transition: all 0.2s;
+  margin-left: 8px;
   border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 179, 255, 0.3);
 }
+
 .plyr__controls #custom-dl-btn:hover {
-  background: #0095d9 !important;
+  background: linear-gradient(135deg, #0095d9 0%, #0077b3 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 179, 255, 0.5);
 }
+
 .plyr__controls #custom-dl-btn svg {
   width: 18px;
   height: 18px;
   display: block;
+  margin-right: 6px;
+}
+
+.plyr__controls #custom-dl-btn span {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .plyr__controls #custom-dl-btn span {
+    display: inline;
+  }
 }
 
 /* ============================================
@@ -394,13 +471,21 @@ html, body {
   
   .plyr__controls #custom-dl-btn {
     padding: 6px 10px !important;
-    font-size: 13px;
+    font-size: 12px;
+  }
+  
+  .plyr__control--overlaid {
+    width: 60px;
+    height: 60px;
   }
 }
 
 /* Hide native download button */
 video::-webkit-media-controls-download-button {
   display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+  overflow: hidden;
 }
 </style>
 </head>
@@ -437,7 +522,9 @@ video::-webkit-media-controls-download-button {
      ============================================ -->
 <div id="video-container">
   <div class="player-wrapper">
-    <video id="video-player" playsinline controls controlsList="nodownload" preload="none"></video>
+    <video id="video-player" playsinline controls controlsList="nodownload" preload="none">
+      Your browser does not support the video tag.
+    </video>
   </div>
 </div>
 
@@ -474,6 +561,11 @@ video::-webkit-media-controls-download-button {
 <script async="async" data-cfasync="false" src="https://pl28678360.effectivegatecpm.com/f75b64a3696ffc79b00c3dc18ab09657/invoke.js"></script>
 
 <!-- ============================================
+     PLYR JS (MUST LOAD BEFORE MAIN SCRIPT)
+     ============================================ -->
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+<!-- ============================================
      MAIN APPLICATION LOGIC
      ============================================ -->
 <script>
@@ -482,8 +574,8 @@ video::-webkit-media-controls-download-button {
 // ============================================
 const CONFIG = {
   smartlink: "https://www.effectivegatecpm.com/h5jj74n8?key=d0bcbb66f87dc06bac39ce98592d1e02",
-  encryptionKey: '112233', // 🔐 GANTI DENGAN KEY ANDA
-  adCheckTimeout: 5000,  // Tunggu 6 detik untuk iklan load
+  encryptionKey: '****', // 🔐 GANTI DENGAN KEY ANDA
+  adCheckTimeout: 6000,  // Tunggu 6 detik untuk iklan load
   clickThreshold: 3      // Trigger smartlink setiap 3 klik
 };
 
@@ -516,10 +608,6 @@ function decryptUrl(encrypted) {
 // 3. AD INTEGRITY CHECKER (Core Logic)
 // ============================================
 
-/**
- * Mengecek apakah kontainer iklan terisi konten.
- * Return TRUE jika iklan terdeteksi, FALSE jika kosong/diblokir.
- */
 function checkAdIntegrity() {
   // Cek Native Banner Container
   const nativeContainer = document.getElementById('container-f75b64a3696ffc79b00c3dc18ab09657');
@@ -539,7 +627,6 @@ function checkAdIntegrity() {
   );
 
   // LOGIKA: Minimal 1 iklan harus muncul agar video diizinkan
-  // Ubah || menjadi && jika ingin lebih ketat (harus dua-duanya)
   const adsActive = hasNative || hasSocial;
 
   console.log('🛡️ Ad Integrity:', { hasNative, hasSocial, active: adsActive });
@@ -562,74 +649,57 @@ function initSystem() {
   const checkInterval = setInterval(() => {
     timeWaited += 250;
     
-    // Jika iklan terdeteksi -> GRANT ACCESS
     if (checkAdIntegrity()) {
       clearInterval(checkInterval);
       grantAccess();
       return;
     }
     
-    // Jika timeout -> DENY ACCESS
     if (timeWaited >= CONFIG.adCheckTimeout) {
       clearInterval(checkInterval);
       denyAccess();
     }
   }, 250);
 
-  // --- GRANT ACCESS: Load Video ---
   function grantAccess() {
     console.log('✅ Access Granted: Loading Video');
     
-    // UI Transition
     loadingEl.style.display = 'none';
     adblockMsg.style.display = 'none';
     videoContainer.style.display = 'block';
     
-    // Initialize Video Player
     loadVideoPlayer();
-    
-    // Setup Ad Interactions (banner on pause)
     setupAdInteractions();
-    
-    // Log success
     logEvent('access_granted');
   }
 
-  // --- DENY ACCESS: Show Block Message ---
   function denyAccess() {
     console.log('❌ Access Denied: Ads not detected');
     
-    // UI Transition
     loadingEl.style.display = 'none';
-    videoContainer.style.display = 'none'; // PASTIKAN VIDEO TERSEMBUNYI
-    adblockMsg.style.display = 'flex';     // TAMPILKAN PESAN
+    videoContainer.style.display = 'none';
+    adblockMsg.style.display = 'flex';
     
-    // Log blocked
     logEvent('access_denied', { reason: 'ads_not_detected' });
   }
 
-  // Simple logging (bisa dikembangkan ke GA/API)
   function logEvent(event, data = {}) {
     console.log(`📊 [${event}]`, data);
-    // Contoh kirim ke Google Analytics:
-    // if (window.gtag) gtag('event', event, { ...data });
   }
 }
 
 // ============================================
-// 5. VIDEO PLAYER INITIALIZATION
+// 5. VIDEO PLAYER INITIALIZATION (PLYR)
 // ============================================
 
 function loadVideoPlayer() {
   const video = document.getElementById('video-player');
   if (!video) return;
 
-  // Parse URL Params
   const urlParams = new URLSearchParams(window.location.search);
   const videoSrc = decryptUrl(urlParams.get('s'));
   const subSrc = decryptUrl(urlParams.get('sub'));
 
-  // Validasi Source
   if (!videoSrc) {
     showError('Link video tidak valid atau rusak.');
     return;
@@ -641,7 +711,7 @@ function loadVideoPlayer() {
   source.type = 'video/mp4';
   video.appendChild(source);
 
-  // Set Subtitle (jika ada)
+  // Set Subtitle
   if (subSrc) {
     const track = document.createElement('track');
     track.kind = 'subtitles';
@@ -652,22 +722,37 @@ function loadVideoPlayer() {
     video.appendChild(track);
   }
 
-  // Initialize Plyr
+  // Initialize Plyr WITH FULL CONFIG
   const player = new Plyr(video, {
     controls: [
-      'play-large', 'play', 'progress', 'current-time', 
-      'duration', 'mute', 'volume', 'fullscreen'
+      'play-large',
+      'play',
+      'progress',
+      'current-time',
+      'duration',
+      'mute',
+      'volume',
+      'settings',
+      'pip',
+      'airplay',
+      'fullscreen'
     ],
-    settings: ['speed'],
+    settings: ['captions', 'quality', 'speed'],
     speed: { selected: 1, options: [0.5, 1, 1.5, 2] },
     disableContextMenu: true,
     autoplay: false,
     muted: true,
-    volume: 0.5
+    volume: 0.5,
+    pip: { enabled: true },
+    airplay: { enabled: true },
+    markers: { enabled: false }
   });
 
-  // Add Custom Download Button
-  setTimeout(() => addDownloadButton(player, videoSrc), 500);
+  // Add Custom Download Button AFTER Plyr is ready
+  player.on('ready', () => {
+    console.log('▶️ Plyr player ready');
+    setTimeout(() => addDownloadButton(player, videoSrc), 300);
+  });
 
   // Disable Right-Click
   video.addEventListener('contextmenu', e => {
@@ -714,6 +799,7 @@ function addDownloadButton(player, videoUrl) {
       <polyline points="7 10 12 15 17 10"/>
       <line x1="12" y1="15" x2="12" y2="3"/>
     </svg>
+    <span>Download</span>
   `;
   
   btn.onclick = (e) => {
@@ -724,7 +810,6 @@ function addDownloadButton(player, videoUrl) {
     logEvent('download_clicked');
   };
   
-  // Insert before fullscreen button (or at end)
   const fullscreenBtn = controls.querySelector('.plyr__control--fullscreen');
   if (fullscreenBtn) {
     controls.insertBefore(btn, fullscreenBtn);
@@ -744,10 +829,8 @@ function setupAdInteractions() {
   const nativeOverlay = document.getElementById('native-banner-overlay');
   
   if (video && nativeOverlay) {
-    // Tampilkan banner saat awal (video paused)
     setTimeout(() => nativeOverlay.classList.add('show'), 1200);
 
-    // Hide on play, Show on pause
     video.addEventListener('play', () => {
       nativeOverlay.classList.remove('show');
     });
@@ -756,7 +839,6 @@ function setupAdInteractions() {
       nativeOverlay.classList.add('show');
     });
     
-    // Hide when video ends
     video.addEventListener('ended', () => {
       nativeOverlay.classList.remove('show');
     });
@@ -767,11 +849,10 @@ function closeNativeBanner() {
   document.getElementById('native-banner-overlay')?.classList.remove('show');
 }
 
-// Smartlink Trigger Logic (Click-based with Mobile Awareness)
+// Smartlink Trigger Logic
 let clickCount = 0;
 
 document.addEventListener('click', (e) => {
-  // Cek jika klik di area player
   const isPlayerArea = e.target.closest('#video-container') || 
                        e.target.closest('.plyr') || 
                        e.target.closest('video');
@@ -779,7 +860,6 @@ document.addEventListener('click', (e) => {
   if (isPlayerArea) {
     clickCount++;
     
-    // Trigger setiap N klik (sesuai config)
     if (clickCount % CONFIG.clickThreshold === 0) {
       triggerSmartlink();
     }
@@ -790,19 +870,15 @@ document.addEventListener('click', (e) => {
 function triggerSmartlink() {
   console.log('🔗 Triggering smartlink...');
   
-  // Coba buka di tab baru
   const newWindow = window.open(CONFIG.smartlink, '_blank', 'noopener,noreferrer');
   
-  // Fallback: jika popup diblokir, redirect di tab yang sama
   if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
     console.log('⚠️ Popup blocked, using fallback redirect');
-    // Optional: window.location.href = CONFIG.smartlink;
   }
   
   logEvent('smartlink_triggered', { clickCount });
 }
 
-// Reset counter saat video selesai
 document.addEventListener('DOMContentLoaded', () => {
   const video = document.getElementById('video-player');
   if (video) {
@@ -821,25 +897,21 @@ function setRandomSocialBarPosition() {
   const container = document.getElementById('social-bar-container-1');
   if (!container) return;
   
-  // Skip jika sudah ada style inline (sudah di-set sebelumnya)
   if (container.style.top || container.style.bottom) return;
   
-  // Random position: 0=top, 1=left, 2=right
   const pos = Math.floor(Math.random() * 3);
-  
-  // Reset
   container.style.cssText = '';
   
   switch(pos) {
-    case 0: // Top center
+    case 0:
       container.style.cssText = 'top:12px; left:50%; transform:translateX(-50%); width:100%; max-width:728px;';
       console.log('📊 Social Bar: TOP');
       break;
-    case 1: // Left side
+    case 1:
       container.style.cssText = 'left:12px; top:50%; transform:translateY(-50%); height:70%; max-height:600px;';
       console.log('📊 Social Bar: LEFT');
       break;
-    case 2: // Right side
+    case 2:
       container.style.cssText = 'right:12px; top:50%; transform:translateY(-50%); height:70%; max-height:600px;';
       console.log('📊 Social Bar: RIGHT');
       break;
@@ -854,24 +926,19 @@ function setRandomSocialBarPosition() {
   console.log('🎬 Streaming Player v2 Loaded');
   console.log('🛡️ Layer System: Gate(1k) < Video(2k) < Banner(3k) < Social(4k+)');
   
-  // Set random social bar position
   setTimeout(setRandomSocialBarPosition, 800);
   
-  // Start main system
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSystem);
   } else {
     initSystem();
   }
   
-  // Re-check on window focus (user mungkin sudah matikan AdBlock)
   window.addEventListener('focus', () => {
     const videoContainer = document.getElementById('video-container');
-    // Jika video masih hidden, cek ulang integritas iklan
     if (videoContainer && videoContainer.style.display !== 'block') {
       console.log('🔄 Window focused - Re-checking ads...');
       if (checkAdIntegrity()) {
-        // Beri sedikit delay agar UI smooth
         setTimeout(() => location.reload(), 300);
       }
     }
