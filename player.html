@@ -188,12 +188,22 @@ video::-webkit-media-controls-enclosure {
 }
 
 /* ============================================
-   SOCIAL BAR LAYER (Layer 4 - z-index: 10000)
+   SOCIAL BAR LAYERS (Layer 4 - z-index: 10000+)
    ============================================ */
-#social-bar-container {
+#social-bar-container-1 {
   position: fixed;
   z-index: 10000;
   transition: all 0.3s ease;
+}
+
+#social-bar-container-2 {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  width: 100%;
+  max-width: 728px;
 }
 
 /* ============================================
@@ -241,6 +251,11 @@ video::-webkit-media-controls-enclosure {
   .adblock-message .icon {
     font-size: 48px;
   }
+  
+  #social-bar-container-2 {
+    max-width: 95%;
+    bottom: 10px;
+  }
 }
 </style>
 </head>
@@ -279,9 +294,16 @@ video::-webkit-media-controls-enclosure {
 </div>
 
 <!-- ============================================
-     SOCIAL BAR LAYER (Layer 4)
+     SOCIAL BAR LAYER 1 (Random Position)
      ============================================ -->
-<div id="social-bar-container"></div>
+<div id="social-bar-container-1"></div>
+
+<!-- ============================================
+     SOCIAL BAR LAYER 2 (Fixed Bottom)
+     ============================================ -->
+<div id="social-bar-container-2">
+  <script src="https://pl28691838.effectivegatecpm.com/78/fa/46/78fa4651e68597e51185aeb9981ee52a.js"></script>
+</div>
 
 <!-- ============================================
      LOADING STATE
@@ -292,7 +314,7 @@ video::-webkit-media-controls-enclosure {
 </div>
 
 <!-- ============================================
-     LOAD SOCIAL BAR SCRIPT
+     LOAD SOCIAL BAR 1 SCRIPT
      ============================================ -->
 <script src="https://pl28678333.effectivegatecpm.com/db/75/44/db7544154f97c94944a76a5c9557ed7a.js"></script>
 
@@ -307,32 +329,6 @@ video::-webkit-media-controls-enclosure {
 // CONFIGURATION
 // ============================================
 const SMARTLINK = "https://www.effectivegatecpm.com/h5jj74n8?key=d0bcbb66f87dc06bac39ce98592d1e02";
-
-// ============================================
-// ENCRYPTION CONFIGURATION
-// ============================================
-const ENCRYPTION_KEY = '112233'; // 🔐 HARUS SAMA DENGAN GENERATOR!
-
-// ============================================
-// DECRYPTION FUNCTION
-// ============================================
-function decryptUrl(encrypted) {
-  try {
-    const decoded = atob(encrypted);
-    let result = '';
-    for (let i = 0; i < decoded.length; i++) {
-      result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
-    }
-    return result;
-  } catch (e) {
-    console.error('❌ Decryption failed:', e.message);
-    return null;
-  }
-}
-
-// Test decryption on load
-console.log('🔐 Decryption System Loaded');
-console.log('Key:', ENCRYPTION_KEY);
 
 // ============================================
 // SMARTLINK CLICK COUNTER SYSTEM
@@ -422,7 +418,23 @@ const urlParams = new URLSearchParams(window.location.search);
 const encryptedVideo = urlParams.get('s');
 const encryptedSub = urlParams.get('sub');
 
-// 🔐 DECRYPT URLS
+// 🔐 DECRYPT URLS (gunakan key yang sama dengan generator)
+const ENCRYPTION_KEY = '112233'; // SESUAIKAN DENGAN KEY ANDA!
+
+function decryptUrl(encrypted) {
+  try {
+    const decoded = atob(encrypted);
+    let result = '';
+    for (let i = 0; i < decoded.length; i++) {
+      result += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
+    }
+    return result;
+  } catch (e) {
+    console.error('❌ Decryption failed:', e.message);
+    return null;
+  }
+}
+
 const videoSource = encryptedVideo ? decryptUrl(encryptedVideo) : null;
 const subSource = encryptedSub ? decryptUrl(encryptedSub) : null;
 
@@ -455,19 +467,24 @@ if (!videoSource) {
     video.appendChild(track);
   }
 
-  // Inisialisasi Plyr dengan mute controls
+  // Inisialisasi Plyr dengan:
+  // ✅ Picture-in-Picture (pip: true)
+  // ✅ Tanpa volume bar (hanya mute button)
+  // ✅ Tanpa caption button
+  // ✅ Tanpa current-time display
   const player = new Plyr(video, {
     controls: [
       'play-large','play','rewind','fast-forward',
-      'progress','current-time','duration','mute','volume',
-      'captions','settings','fullscreen'
+      'progress','duration','mute', // ❌ 'captions', 'current-time' dihapus
+      'settings','fullscreen','pip' // ✅ PiP ditambahkan
     ],
-    settings: ['speed','captions'],
+    settings: ['speed'],
     speed: { selected: 1, options: [0.5,1,1.5,2,3] },
     disableContextMenu: true,
     autoplay: false,
-    muted: true,
-    volume: 0.5
+    muted: true, // ✅ Video dimulai dalam mode MUTED
+    volume: 0.5,
+    pip: { enabled: true } // ✅ Aktifkan Picture-in-Picture
   });
 
   // Fungsi menambahkan tombol custom Download via Safelink
@@ -542,7 +559,7 @@ if (!videoSource) {
     // Set muted pada video element langsung
     video.muted = true;
     player.muted = true;
-    console.log('🔇 Video dimulai dalam mode MUTED');
+    console.log('🔇 Video dimulai dalam mode MUTED (default)');
     
     // Coba tambahkan tombol setelah delay
     setTimeout(() => {
@@ -584,9 +601,9 @@ if (!videoSource) {
 // FUNGSI IKLAN BARU
 // ============================================
 
-// 1. SET POSISI RANDOM SOCIAL BAR
+// 1. SET POSISI RANDOM SOCIAL BAR 1
 function setRandomSocialBarPosition() {
-  const container = document.getElementById('social-bar-container');
+  const container = document.getElementById('social-bar-container-1');
   if (!container) return;
 
   // Pilih posisi random: 0=top, 1=bottom, 2=left, 3=right
@@ -606,28 +623,28 @@ function setRandomSocialBarPosition() {
       container.style.left = '50%';
       container.style.transform = 'translateX(-50%)';
       container.style.width = '100%';
-      console.log('📊 Social Bar: Position TOP');
+      console.log('📊 Social Bar 1: Position TOP');
       break;
-    case 1: // Bottom
-      container.style.bottom = '10px';
+    case 1: // Bottom (avoid conflict with social bar 2)
+      container.style.top = '10px'; // Use top instead
       container.style.left = '50%';
       container.style.transform = 'translateX(-50%)';
       container.style.width = '100%';
-      console.log('📊 Social Bar: Position BOTTOM');
+      console.log('📊 Social Bar 1: Position TOP (avoid bottom conflict)');
       break;
     case 2: // Left
       container.style.left = '10px';
       container.style.top = '50%';
       container.style.transform = 'translateY(-50%)';
       container.style.height = '100%';
-      console.log('📊 Social Bar: Position LEFT');
+      console.log('📊 Social Bar 1: Position LEFT');
       break;
     case 3: // Right
       container.style.right = '10px';
       container.style.top = '50%';
       container.style.transform = 'translateY(-50%)';
       container.style.height = '100%';
-      console.log('📊 Social Bar: Position RIGHT');
+      console.log('📊 Social Bar 1: Position RIGHT');
       break;
   }
 }
